@@ -100,13 +100,13 @@ int main(void)
   //GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  GPIOA->ODR |= GPIO_ODR_OD5;
+  GPIOA->ODR &= ~GPIO_ODR_OD5;
   while(1){
 	  uint32_t odr = GPIOA->ODR;
 
 		/* Set selected pins that were at low level, and reset ones that were high */
 	  GPIOA->BSRR = ((odr & GPIO_ODR_OD5) << 16) | (~odr & GPIO_ODR_OD5);
-	  HAL_Delay(100);
+	  HAL_Delay(250);
   }
     /* USER CODE BEGIN 3 */
   //}
