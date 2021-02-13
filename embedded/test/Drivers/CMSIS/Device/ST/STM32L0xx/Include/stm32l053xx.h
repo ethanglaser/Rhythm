@@ -6680,7 +6680,6 @@ typedef struct
 #define USART_CR1_M0_Pos              (12U)   
 #define USART_CR1_M0_Msk              (0x1UL << USART_CR1_M0_Pos)               /*!< 0x00001000 */
 #define USART_CR1_M0                  USART_CR1_M0_Msk                         /*!< Word length - Bit 0 */
-#define USART_CR1_MME_Pos             (13U)   
 #define USART_CR1_MME_Msk             (0x1UL << USART_CR1_MME_Pos)              /*!< 0x00002000 */
 #define USART_CR1_MME                 USART_CR1_MME_Msk                        /*!< Mute Mode Enable */
 #define USART_CR1_CMIE_Pos            (14U)   

@@ -30,6 +30,8 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l0xx_hal.h"
 #include "stm32l0xx_hal_gpio.h"
+#include <string.h>
+#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

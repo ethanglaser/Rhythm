@@ -16,84 +16,19 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
-/* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
   SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-  /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  //while (1)
-  //{
-    /* USER CODE END WHILE */
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   RCC->IOPENR |= RCC_IOPENR_IOPAEN;
+  RCC->IOPENR |= RCC_IOPENR_IOPCEN;
+  RCC->APB1ENR |= RCC_APB1ENR_LPUART1EN;
 
   GPIO_InitStruct.Pin = GPIO_PIN_5;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -101,16 +36,44 @@ int main(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
   GPIOA->ODR &= ~GPIO_ODR_OD5;
-  while(1){
+  /*while(1){
 	  uint32_t odr = GPIOA->ODR;
 
-		/* Set selected pins that were at low level, and reset ones that were high */
+		 Set selected pins that were at low level, and reset ones that were high
 	  GPIOA->BSRR = ((odr & GPIO_ODR_OD5) << 16) | (~odr & GPIO_ODR_OD5);
 	  HAL_Delay(250);
+  }*/
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  LPUART1->CR1 &= ~USART_CR1_M;
+  LPUART1->BRR |= 0x369; // divides clock source so baud rate = 9600 bps
+  LPUART1->CR2 &= ~USART_CR2_STOP;
+  LPUART1->CR1 |= USART_CR1_UE;
+  LPUART1->CR1 |= USART_CR1_TE;
+  char hello[] = "Hello World";
+  char current;
+  /*FILE* fptr = fopen("test.txt", "w");
+  if (fptr == NULL){
+	  printf("Error: Could not open file\n");
+	  return 0;
   }
-    /* USER CODE BEGIN 3 */
-  //}
-  /* USER CODE END 3 */
+  fprintf(fptr, "Hello\n");*/
+
+  for (int i = 0; i < strlen(hello); i++){
+	  current = hello[i];
+//	  fprintf(fptr, "%c", current);
+	  LPUART1->TDR &= ~0xff;
+	  LPUART1->TDR |= current;
+	  while ((LPUART1->ISR & USART_ISR_TC) != 1){}
+  }
+//  fclose(fptr);
+
 }
 
 /**
@@ -151,11 +114,6 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 }
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
-
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
