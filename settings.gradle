@@ -1,3 +1,1 @@
-include ':spotify-app-remote-release-0.7.1'
-include ':app'
-rootProject.name = "KotlinAPI"
+include ':app', ':spotify-app-remote-release-0.6.0'
