@@ -9,12 +9,12 @@ import kotlinx.android.synthetic.main.activity_player.*
 class PlayerActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val playlistDict=intent.getStringExtra("playlistDict")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
         setupViews()
         setupListeners()
-        val name = "rock.json"
-        SpotifyService.jsonHandler(name)
+        SpotifyService.jsonHandler(playlistDict)
         //SpotifyService.suscribeToChanges()
     }
 
