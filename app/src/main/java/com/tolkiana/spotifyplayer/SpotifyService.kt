@@ -19,6 +19,10 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.*
 import kotlin.math.abs
+import kotlinx.android.synthetic.main.activity_player.*
+import android.view.View
+import android.support.v7.app.AppCompatActivity
+import android.os.Bundle
 
 enum class PlayingState {
     PAUSED, PLAYING, STOPPED
@@ -94,14 +98,16 @@ object SpotifyService {
             handler(it.track)
         }*/
         mSpotifyAppRemote?.playerApi?.subscribeToPlayerContext()?.setEventCallback {
-            Log.d("Playlist ID:", it.uri)
+            //Log.d("Playlist ID:", it.uri)
         }
     }
 
     fun getCurrentTrackImage(handler: (Bitmap) -> Unit)  {
         getCurrentTrack {
+            Log.d("current", it.toString())
             getImage(it.imageUri) {
                 handler(it)
+                //trackImageView.setImageBitmap(it)
             }
         }
     }
@@ -157,40 +163,12 @@ object SpotifyService {
         Log.d("STUFF", process.inputStream.toString())
     }
 
-    fun jsonHandler(playlistDict: String) {
+    fun jsonHandler(playlistDict: String): Map<String, Song> {
         val gson = GsonBuilder().create()
         val type: Type = object : TypeToken<Map<String?, Song?>?>() {}.type
         val dict: Map<String, Song> = gson.fromJson(playlistDict, type)
         Log.d("playlist", dict.toString())
-        rhythm(dict)
+        return dict
     }
-
-    fun rhythm(dict: Map<String, Song>) {
-        val random = Random()
-        val gson = GsonBuilder().create()
-        var first = dict.entries.elementAt(random.nextInt(dict.size))
-        Log.d("a", first.toString())
-        play(first.key.toString())
-
-        var wait = first.value.duration - 30000
-        while(1 == 1) {
-            Thread.sleep(wait.toLong())
-            var tempo = random.nextGaussian() * 35 + 150
-            Log.d("TEMPO", tempo.toString())
-            var closestsong = ""
-            var closestvalue = 100.0
-            for ((k, v) in dict) {
-                if (abs(tempo - v.tempo) < closestvalue) {
-                    closestvalue = abs(tempo - v.tempo)
-                    closestsong = k
-                    wait = v.duration
-                }
-            }
-            Log.d("SONG", dict[closestsong].toString())
-
-            queue(closestsong)
-        }
-    }
-
 
 }
