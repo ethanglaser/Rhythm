@@ -1,0 +1,124 @@
+/* USER CODE BEGIN 1 */
+
+  /* USER CODE END 1 */
+
+  /* MCU Configuration--------------------------------------------------------*/
+
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
+
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* Configure the system clock */
+  SystemClock_Config();
+
+  /* USER CODE BEGIN SysInit */
+
+  /* USER CODE END SysInit */
+
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_I2C1_Init();
+  MX_USART2_Init();
+  /* USER CODE BEGIN 2 */
+
+  /* USER CODE END 2 */
+
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  uint16_t Main_ADDR = 0x55 << 1; // Use 8-bit address
+
+  HAL_StatusTypeDef ret;
+  HAL_StatusTypeDef ret2;
+
+  uint8_t data[2];
+  uint8_t test = 0x0C;
+  uint8_t buf[12];
+  int16_t val;
+  float temp_c;
+  uint8_t data2[2];
+
+    while (1)
+    {
+  	  uint16_t function = 0x01;
+      uint8_t subCommandMSB = (function >> 8);
+      uint8_t subCommandLSB = (function & 0x00FF);
+      uint8_t command[2] = {subCommandLSB, subCommandMSB};
+      uint8_t data2[2] = {0, 0};
+  	  ret = HAL_I2C_Master_Transmit(&hi2c1, Main_ADDR, command, 2, 2000);
+  	  if ( ret != HAL_OK ) {
+  		  HAL_USART_Transmit(&husart2, (uint8_t *) " TRANSMIT ERROR", strlen(" TRANSMIT ERROR"), 100);
+  	  }
+  	  else {
+  		  ret = HAL_I2C_Master_Receive(&hi2c1, Main_ADDR | 0x01, data2, 2, 2000);
+  		  if ( ret != HAL_OK ) {
+  			  HAL_USART_Transmit(&husart2, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
+  		  }
+  		  else {
+  			  uint16_t valll = (((data2[0] & 0x0F) << 8) | data2[1]);
+  		      uint16_t vall = ((int16_t)data2[0] << 4) | (data2[1] >> 4);
+  			  uint16_t finalval = ((uint16_t)data2[1] << 8) | data2[0];
+  			  if (finalval == 0x0421) {
+  	  			  HAL_USART_Transmit(&husart2, (uint8_t *) " YIPPEE", strlen(" YIPPEE"), 100);
+  			  }
+  			  ret2 = HAL_USART_Transmit(&husart2, finalval, sizeof(uint16_t), 100);
+  		  }
+  	  }
+  	  if (ret2 == HAL_OK) {
+  		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+  	  }
+	  HAL_Delay(1000);
+    }
+
+  //val = ((int16_t)buf[0] << 4) | (buf[1] >> 4);
+
+  //HAL_USART_Transmit(&husart2, (uint8_t *) buf, 12, 10);
+
+  //sprintf((char*)buf, "%d \r\n", val);
+  while (1)
+  {
+	  buf[0] = test;
+	  ret = HAL_I2C_Master_Transmit(&hi2c1, Main_ADDR, buf, 1, 1000);
+
+	  //HAL_USART_Transmit(&husart2, (uint8_t *) ret, sizeof(HAL_StatusTypeDef), 10);
+	  if ( ret != HAL_OK ) {
+		  HAL_USART_Transmit(&husart2, (uint8_t *) " TRANSMIT ERROR", strlen(" TRANSMIT ERROR"), 10);
+	  }
+	  else {
+		  //HAL_USART_Transmit(&husart2, (uint8_t *) " GREATT SUCCESS", strlen(" GREATT SUCCESS"), 10);
+		  ret = HAL_I2C_Master_Receive(&hi2c1, Main_ADDR, data, 2, 1000);
+		  if ( ret != HAL_OK ) {
+			  HAL_USART_Transmit(&husart2, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 10);
+		  }
+		  else {
+			  val = ((int16_t)buf[0] << 4) | (buf[1] >> 4);
+		      if ( val > 0x7FF ) {
+		        val |= 0xF000;
+		      }
+		      temp_c = val * 1.0;
+		      sprintf((char*)buf,
+		            "%u \%\r\n",
+		            (unsigned int)temp_c);
+
+			  HAL_USART_Transmit(&husart2, buf, strlen((char*)buf), 10);
+			  //HAL_USART_Transmit(&husart2, (uint8_t *) " GREATR SUCCESS", strlen(" GREATR SUCCESS"), 10);
+		  }
+	  }
+	  /*ret = HAL_I2C_Master_Receive(&hi2c1, Main_ADDR, buf, 2, 1000);
+	  if ( ret != HAL_OK ) {
+		  HAL_USART_Transmit(&husart2, (uint8_t *) "TX ERROR", strlen("RX ERROR"), 10);
+	  }*/
+	  /*
+	  HAL_USART_Transmit(&husart2, (uint8_t *) "Hello, world!", strlen("Hello, world!"), 10);
+	  //debugPrint(&husart2, "oi, mate!"); // print*/
+	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+
+	  HAL_Delay(1000);
+    /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
+  }
+  /* USER CODE END 3 */
