@@ -1,0 +1,3 @@
+testMath.c:8:7:math_test	16	static
+testMath.c:14:14:math_trig_int16_atan2deg	24	static
+testMath.c:23:14:math_testSmallestDeltaBetweenAnglesInDegrees	24	static

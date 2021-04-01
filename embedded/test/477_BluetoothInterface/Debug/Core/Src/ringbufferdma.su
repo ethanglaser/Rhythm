@@ -1,0 +1,4 @@
+ringbufferdma.c:5:6:RingBufferDmaU8_initUSARTRx	24	static
+ringbufferdma.c:13:10:RingBufferDmaU8_available	32	static
+ringbufferdma.c:28:6:RingBufferDmaU8_readLine	40	static
+ringbufferdma.c:48:9:RingBufferDmaU8_read	24	static

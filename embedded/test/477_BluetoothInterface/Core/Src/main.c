@@ -97,6 +97,10 @@ void RN4020_resetDefaultStep(USART_HandleTypeDef *huart) {
 	  RN4020_setBaudRate115200(huart);
 	  RN4020_setService(huart);
 	  RN4020_clearPrivateSettings(huart);
+	  RN4020_setPrivateService(huart);
+	  RN4020_setPrivateChar(huart);
+	  RN4020_setDeviceType(huart);
+	  RN4020_reset(huart);
 	}
 
 void RN4020_resetToFactoryDefault(USART_HandleTypeDef *huart) {
@@ -122,6 +126,10 @@ void RN4020_setPrivateChar(USART_HandleTypeDef *huart) {
 void RN4020_setDeviceType(USART_HandleTypeDef *huart) {
 	  RN4020_sendData(huart, "SR,20000000");
 	}
+void RN4020_reset(USART_HandleTypeDef *huart) {
+	  RN4020_sendData(huart, "R,1");
+	}
+
 
 void RN4020_sendData(USART_HandleTypeDef *huart, const char* line) {
   char newLineCh = '\n';

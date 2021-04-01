@@ -1,0 +1,12 @@
+ringbuffer.c:5:6:RingBufferU8_init	24	static
+ringbuffer.c:14:10:RingBufferU8_available	16	static
+ringbuffer.c:18:10:RingBufferU8_free	16	static
+ringbuffer.c:22:6:RingBufferU8_clear	16	static
+ringbuffer.c:28:9:RingBufferU8_readByte	24	static
+ringbuffer.c:40:6:RingBufferU8_read	40	static
+ringbuffer.c:49:6:RingBufferU8_writeByte	16	static
+ringbuffer.c:62:6:RingBufferU8_write	40	static
+ringbuffer.c:71:10:RingBufferU8_readLine	24	static
+ringbuffer.c:75:10:RingBufferU8_readUntil	40	static
+ringbuffer.c:91:9:RingBufferU8_peek	16	static
+ringbuffer.c:95:9:RingBufferU8_peekn	24	static
