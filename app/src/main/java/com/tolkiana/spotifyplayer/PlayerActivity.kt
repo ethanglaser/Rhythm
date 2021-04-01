@@ -93,7 +93,6 @@ class PlayerActivity : AppCompatActivity() {
         }
         CoroutineScope(Dispatchers.IO).launch {
             delay(5000)
-            Log.d("in", "co1")
             withContext(Dispatchers.Main) {
                 while(true) {
                     Thread.sleep(waitTime.toLong() - 30000)
