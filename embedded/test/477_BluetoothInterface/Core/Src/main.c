@@ -36,6 +36,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define RN4020_TIMEOUT 5000
+#define TRUE 1
+#define FALSE 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -44,45 +46,92 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-USART_HandleTypeDef husart1;
-USART_HandleTypeDef husart2;
+UART_HandleTypeDef huart1;
+UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+RN4020_State currState;
+uint8_t rxBuffer[3];
+uint8_t rxBuffer2[5];
+uint8_t compareAOK[3] = {'A','O','K'};
+uint8_t compareCMD[3] = {'C', 'M', 'D'};
+uint8_t compareREB[3] = {'R', 'E', 'B'};
+uint8_t compareREBOOT[6] = {'R', 'E', 'B', 'O', 'O', 'T'};
 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_USART1_Init(void);
-static void MX_USART2_Init(void);
+static void MX_USART1_UART_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void sendUSART(USART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin);
+void sendUSART(UART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin);
 
-void RN4020_resetDefaultStep(USART_HandleTypeDef *huart);
+int RN4020_resetDefaultStep(UART_HandleTypeDef *huart);
 
-void RN4020_resetToFactoryDefault(USART_HandleTypeDef *huart);
+HAL_StatusTypeDef RN4020_resetToFactoryDefault(UART_HandleTypeDef *huart);
 
-void RN4020_setBaudRate115200(USART_HandleTypeDef *huart);
+HAL_StatusTypeDef RN4020_setBaudRate115200(UART_HandleTypeDef *huart);
 
-void RN4020_setService(USART_HandleTypeDef *huart);
+HAL_StatusTypeDef RN4020_setService(UART_HandleTypeDef *huart);
 
-void RN4020_clearPrivateSettings(USART_HandleTypeDef *huart);
+HAL_StatusTypeDef RN4020_clearPrivateSettings(UART_HandleTypeDef *huart);
 
-void RN4020_setPrivateService(USART_HandleTypeDef *huart);
+HAL_StatusTypeDef RN4020_setPrivateService(UART_HandleTypeDef *huart);
 
-void RN4020_setPrivateChar(USART_HandleTypeDef *huart);
+HAL_StatusTypeDef RN4020_setPrivateChar(UART_HandleTypeDef *huart);
 
-void RN4020_setDeviceType(USART_HandleTypeDef *huart);
+HAL_StatusTypeDef RN4020_setDeviceType(UART_HandleTypeDef *huart);
 
-void sendData(USART_HandleTypeDef *huart, char _out[]);
+HAL_StatusTypeDef RN4020_rebootDevice(UART_HandleTypeDef *huart);
 
-void RN4020_sendData(USART_HandleTypeDef *huart, const char* line);
+HAL_StatusTypeDef RN4020_waitForReadyState();
 
-void sendUSART(USART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin)
+void sendData(UART_HandleTypeDef *huart, char _out[]);
+
+void RN4020_sendData(UART_HandleTypeDef *huart, const char* line);
+
+int compStr(uint8_t strcomp[], uint8_t expcomp[]);
+
+void resetRxBuffer(uint8_t *rxBuffer);
+
+void RN4020_setState(RN4020_State *state, RN4020_State newState);
+
+void RN4020_checkState();
+
+void setupReceiveInterrupt(UART_HandleTypeDef *huart, int size);
+
+void setupReceiveInterrupt(UART_HandleTypeDef *huart, int size) {
+	HAL_UART_Receive_IT(huart, rxBuffer, size);
+}
+
+int compStr(uint8_t* strcomp, uint8_t* expcomp)
+{
+	//int sizeStrComp = sizeof(strcomp)/sizeof(strcomp[0]);
+	int sizeExpComp = sizeof(expcomp)/sizeof(expcomp[0]);
+	for(int i = 0; i < sizeExpComp; i++)
+	{
+		if (strcomp[i] != expcomp[i])
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+void resetRxBuffer(uint8_t *rxBuffer)
+{
+	int sizeRx = sizeof(rxBuffer) / sizeof(rxBuffer[0]);
+	for (int i = 0; i < sizeRx; i++) {
+		rxBuffer[i] = 0;
+	}
+}
+
+void sendUSART(UART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin)
 {
 	HAL_StatusTypeDef ret;
-	ret = HAL_USART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10);
+	ret = HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10);
 	HAL_Delay(5000);
 	if (ret == HAL_OK) {
 		HAL_GPIO_TogglePin(GPIOX, GPIO_Pin);
@@ -92,54 +141,176 @@ void sendUSART(USART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int
 //  RN4020 Functions (START)
 //**********************************************************************
 
-void RN4020_resetDefaultStep(USART_HandleTypeDef *huart) {
-	  RN4020_resetToFactoryDefault(huart);
-	  RN4020_setBaudRate115200(huart);
-	  RN4020_setService(huart);
-	  RN4020_clearPrivateSettings(huart);
-	  RN4020_setPrivateService(huart);
-	  RN4020_setPrivateChar(huart);
-	  RN4020_setDeviceType(huart);
-	  RN4020_reset(huart);
+int RN4020_resetDefaultStep(UART_HandleTypeDef *huart) {
+	int completeFlag = TRUE;
+	if (RN4020_resetToFactoryDefault(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
+	if (RN4020_setBaudRate115200(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
+	if (RN4020_setService(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
+	if (RN4020_clearPrivateSettings(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
+	if (RN4020_setPrivateService(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
+	if (RN4020_setPrivateChar(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
+	if (RN4020_setDeviceType(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
+	if (RN4020_rebootDevice(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
 	}
 
-void RN4020_resetToFactoryDefault(USART_HandleTypeDef *huart) {
-  RN4020_sendData(huart, "SF,1");
+	return completeFlag;
 }
 
-void RN4020_setBaudRate115200(USART_HandleTypeDef *huart) {
-	  RN4020_sendData(huart, "SB,4");
+
+HAL_StatusTypeDef RN4020_resetToFactoryDefault(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "SF,1\r\n");
+	return RN4020_waitForReadyState();
+}
+
+HAL_StatusTypeDef RN4020_setBaudRate115200(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "SB,4\r\n");
+	return RN4020_waitForReadyState();
 	}
 
-void RN4020_setService(USART_HandleTypeDef *huart) {
-	  RN4020_sendData(huart, "SS,C0000001");
+HAL_StatusTypeDef RN4020_setService(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "SS,80000000\r\n");
+	return RN4020_waitForReadyState();
 	}
-void RN4020_clearPrivateSettings(USART_HandleTypeDef *huart) {
-	  RN4020_sendData(huart, "PZ");
+HAL_StatusTypeDef RN4020_clearPrivateSettings(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "PZ\r\n");
+	return RN4020_waitForReadyState();
 	}
-void RN4020_setPrivateService(USART_HandleTypeDef *huart) {
-	  RN4020_sendData(huart, "PS,11223344556677889900AABBCCDDEEFF");
+HAL_StatusTypeDef RN4020_setPrivateService(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "PS,11223344556677889900AABBCCDDEEFF\r\n");
+	return RN4020_waitForReadyState();
 	}
-void RN4020_setPrivateChar(USART_HandleTypeDef *huart) {
-	  RN4020_sendData(huart, "PC,010203040506070809000A0B0C0D0E0F,08,02");
+HAL_StatusTypeDef RN4020_setPrivateChar(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "PC,010203040506070809000A0B0C0D0E0F,08,02\r\n");
+	return RN4020_waitForReadyState();
 	}
-void RN4020_setDeviceType(USART_HandleTypeDef *huart) {
-	  RN4020_sendData(huart, "SR,20000000");
+HAL_StatusTypeDef RN4020_setDeviceType(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "SR,20000000\r\n");
+	return RN4020_waitForReadyState();
 	}
-void RN4020_reset(USART_HandleTypeDef *huart) {
-	  RN4020_sendData(huart, "R,1");
+HAL_StatusTypeDef RN4020_rebootDevice(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_REBOOT);
+	RN4020_sendData(huart, "R,1\r\n");
+	return RN4020_waitForReadyState();
+	}
+
+//Uses global variable currState
+HAL_StatusTypeDef RN4020_waitForReadyState() {
+	if(currState == RN4020_STATE_READY) {
+		return HAL_OK;
+	}
+
+	uint32_t startTime = HAL_GetTick();
+	while (1) {
+		if(currState == RN4020_STATE_READY) {
+			resetRxBuffer(rxBuffer);
+			return HAL_OK;
+		}
+		if ((HAL_GetTick() - startTime) > RN4020_TIMEOUT) {
+			resetRxBuffer(rxBuffer);
+			return HAL_TIMEOUT;
+		}
+		RN4020_checkState();
 	}
 
 
-void RN4020_sendData(USART_HandleTypeDef *huart, const char* line) {
-  char newLineCh = '\n';
-  HAL_USART_Transmit(huart, (uint8_t*)line, strlen(line), RN4020_TIMEOUT);
-  HAL_USART_Transmit(huart, (uint8_t*)&newLineCh, 1, RN4020_TIMEOUT);
+}
+
+//Uses global variable currState
+void RN4020_checkState() {
+	switch(currState) {
+	case RN4020_STATE_WAITING_FOR_AOK:
+		if (compStr(rxBuffer, compareAOK) == TRUE) {
+			RN4020_setState(&currState, RN4020_STATE_READY);
+			return;
+		}
+	break;
+	case RN4020_STATE_WAITING_FOR_REBOOT:
+		if (compStr(rxBuffer, compareREB) == TRUE) {
+			RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_CMD);
+			return;
+		}
+	break;
+	case RN4020_STATE_WAITING_FOR_CMD:
+		if (compStr(rxBuffer, compareCMD) == TRUE) {
+			RN4020_setState(&currState, RN4020_STATE_READY);
+		}
+	break;
+	case RN4020_STATE_READY:
+	break;
+	}
+}
+
+void RN4020_setState(RN4020_State *state, RN4020_State newState) {
+	*state = newState;
+}
+
+void RN4020_sendData(UART_HandleTypeDef *huart, const char* line) {
+//  char carriageLineCh = '\r';
+//  char newLineCh = '\n';
+  HAL_UART_Transmit(huart, (uint8_t*)line, strlen(line), RN4020_TIMEOUT);
+  //HAL_UART_Transmit(huart, (uint8_t*)&carriageLineCh, 1, RN4020_TIMEOUT);
+  //HAL_UART_Transmit(huart, (uint8_t*)&newLineCh, 1, RN4020_TIMEOUT);
+  //HAL_Delay(300);
 }
 
 //**********************************************************************
 //  RN4020 Functions (END)
 //**********************************************************************
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	//HAL_UART_Transmit(&huart1, (uint8_t *)"Success\n\r", strlen("Success\n\r"), 100);
+	HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
+
+// --------------------------------------------------------------------------------------------
+// DEBUGGING by TRANSMITTING BACK TO TERMINAL
+//	// DEBUG: Write back to terminal to see if it is the same
+//	HAL_UART_Transmit(&huart1, (uint8_t *)"\n\r", strlen("\n\r"), 100);
+//    HAL_UART_Transmit(&huart1, rxBuffer, sizeof(rxBuffer), 100);
+//	HAL_UART_Transmit(&huart1, (uint8_t *)"\n\r", strlen("\n\r"), 100);
+//
+//	// Compare string using compStr function to see if they are the same
+//	if(compStr(rxBuffer, compareAOK) == TRUE) {
+//		HAL_UART_Transmit(&huart1, (uint8_t *)"Success\n\r", strlen("Success\n\r"), 100);
+//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+//	}
+//	else {
+//		HAL_UART_Transmit(&huart1, (uint8_t *)"Fail\n\r", strlen("Fail\n\r"), 100);
+//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+//	}
+//    HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
+// --------------------------------------------------------------------------------------------
+}
 
 /* USER CODE END PFP */
 
@@ -155,7 +326,7 @@ void RN4020_sendData(USART_HandleTypeDef *huart, const char* line) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-//  HAL_StatusTypeDef pass;
+	int ret;
 
   /* USER CODE END 1 */
 
@@ -177,24 +348,18 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART1_Init();
-  MX_USART2_Init();
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-	//setup_usart1();
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // Set PA5 pin off
 
-	//char testline[] = "Hello World.";
-//    ret = HAL_USART_Transmit(&husart1, (uint8_t *) "+", strlen("+"), 10);
-//    //debugPrint(&husart2, "Hello!");
-//    if (ret == HAL_OK) {
-//    	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-//    }
-    //HAL_USART_Receive(&husart1, (uint8_t *) in, 8, 1000);
-
-    //HAL_USART_Receive(&husart1, (uint8_t *) in, 8, 1);
-
-  //sendUSART(&husart2, "+", GPIOA, GPIO_PIN_5);
-  //sendUSART(&husart2, "SF,1", GPIOA, GPIO_PIN_5);
-  RN4020_resetDefaultStep(&husart2);
+  //Bluetooth LE Configuration Step
+  HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
+  ret = RN4020_resetDefaultStep(&huart1);
+  if (ret == TRUE) {
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+  }
+//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 
@@ -202,14 +367,30 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	while (1)
 	{
-		//HAL_USART_Receive(&husart1, (uint8_t *)aRxBuffer, 8, 10);
-		//HAL_USART_Transmit(&husart2, (uint8_t *)aRxBuffer, strlen(aRxBuffer), 10);
-		HAL_USART_Transmit(&husart2, (uint8_t *) "Hello, world!", strlen("Hello, world!"), 10);
-
-		HAL_Delay(1000);
+		//Only UART Channel 1 works for Discovery board... PB6/PB7
+		//HAL_UART_Transmit(&huart2, (uint8_t *) "Hello, world!", strlen("Hello, world!"), 10);
+		//HAL_UART_Transmit(&huart1, (uint8_t *) "Hello, world!", strlen("Hello, world!"), 10); // This is to the right of nucleo board
+		//HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+//		POLLING FOR UART
+//		HAL_UART_Receive(&huart1, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
+//		HAL_UART_Transmit(&huart1, (uint8_t *)"\n\r", strlen("\n\r"), 100);
+//		HAL_UART_Transmit(&huart1, rxBuffer, sizeof(rxBuffer), 100);
+//		HAL_UART_Transmit(&huart1, (uint8_t *)"\n\r", strlen("\n\r"), 100);
+//		if(rxBuffer[0] == (uint8_t *)"A") {
+//			HAL_UART_Transmit(&huart1, (uint8_t *)"Success\n\r", strlen("Success\n\r"), 100);
+//		}
+//		else {
+//			HAL_UART_Transmit(&huart1, (uint8_t *)"Fail\n\r", strlen("Fail\n\r"), 100);
+//		}
+
+//		HAL_USART_Receive(&husart2, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
+//		HAL_USART_Transmit(&husart2, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
+
+
 	}
   /* USER CODE END 3 */
 }
@@ -266,7 +447,7 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-static void MX_USART1_Init(void)
+static void MX_USART1_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART1_Init 0 */
@@ -276,16 +457,17 @@ static void MX_USART1_Init(void)
   /* USER CODE BEGIN USART1_Init 1 */
 
   /* USER CODE END USART1_Init 1 */
-  husart1.Instance = USART1;
-  husart1.Init.BaudRate = 115200;
-  husart1.Init.WordLength = USART_WORDLENGTH_8B;
-  husart1.Init.StopBits = USART_STOPBITS_1;
-  husart1.Init.Parity = USART_PARITY_NONE;
-  husart1.Init.Mode = USART_MODE_TX_RX;
-  husart1.Init.CLKPolarity = USART_POLARITY_LOW;
-  husart1.Init.CLKPhase = USART_PHASE_1EDGE;
-  husart1.Init.CLKLastBit = USART_LASTBIT_DISABLE;
-  if (HAL_USART_Init(&husart1) != HAL_OK)
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 115200;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -300,7 +482,7 @@ static void MX_USART1_Init(void)
   * @param None
   * @retval None
   */
-static void MX_USART2_Init(void)
+static void MX_USART2_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
@@ -310,16 +492,17 @@ static void MX_USART2_Init(void)
   /* USER CODE BEGIN USART2_Init 1 */
 
   /* USER CODE END USART2_Init 1 */
-  husart2.Instance = USART2;
-  husart2.Init.BaudRate = 115200;
-  husart2.Init.WordLength = USART_WORDLENGTH_8B;
-  husart2.Init.StopBits = USART_STOPBITS_1;
-  husart2.Init.Parity = USART_PARITY_NONE;
-  husart2.Init.Mode = USART_MODE_TX_RX;
-  husart2.Init.CLKPolarity = USART_POLARITY_LOW;
-  husart2.Init.CLKPhase = USART_PHASE_1EDGE;
-  husart2.Init.CLKLastBit = USART_LASTBIT_DISABLE;
-  if (HAL_USART_Init(&husart2) != HAL_OK)
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
   {
     Error_Handler();
   }

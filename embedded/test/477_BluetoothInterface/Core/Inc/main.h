@@ -32,6 +32,12 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+typedef enum {
+	  RN4020_STATE_READY,
+	  RN4020_STATE_WAITING_FOR_AOK,
+	  RN4020_STATE_WAITING_FOR_REBOOT,
+	  RN4020_STATE_WAITING_FOR_CMD
+	} RN4020_State;
 
 /* USER CODE END Includes */
 
