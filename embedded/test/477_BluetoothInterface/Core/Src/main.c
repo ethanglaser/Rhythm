@@ -66,7 +66,10 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
-void sendUSART(UART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin);
+
+//**********************************************************************
+//  RN4020 Function Declarations (START)
+//**********************************************************************
 
 int RN4020_resetDefaultStep(UART_HandleTypeDef *huart);
 
@@ -100,11 +103,39 @@ void RN4020_setState(RN4020_State *state, RN4020_State newState);
 
 void RN4020_checkState();
 
-void setupReceiveInterrupt(UART_HandleTypeDef *huart, int size);
+//**********************************************************************
+//  RN4020 Function Declarations (END)
+//**********************************************************************
 
-void setupReceiveInterrupt(UART_HandleTypeDef *huart, int size) {
-	HAL_UART_Receive_IT(huart, rxBuffer, size);
-}
+//**********************************************************************
+//  RN4020 Maybe useful later (START)
+//**********************************************************************
+//void setupReceiveInterrupt(UART_HandleTypeDef *huart, int size);
+//void sendUSART(UART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin);
+
+
+//
+//void setupReceiveInterrupt(UART_HandleTypeDef *huart, int size) {
+//	HAL_UART_Receive_IT(huart, rxBuffer, size);
+//}
+
+//void sendUSART(UART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin)
+//{
+//	HAL_StatusTypeDef ret;
+//	ret = HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10);
+//	HAL_Delay(5000);
+//	if (ret == HAL_OK) {
+//		HAL_GPIO_TogglePin(GPIOX, GPIO_Pin);
+//	}
+//}
+
+//**********************************************************************
+//  RN4020 Maybe useful later (END)
+//**********************************************************************
+
+//**********************************************************************
+//  HELPER RN4020 Functions (START)
+//**********************************************************************
 
 int compStr(uint8_t* strcomp, uint8_t* expcomp)
 {
@@ -128,15 +159,10 @@ void resetRxBuffer(uint8_t *rxBuffer)
 	}
 }
 
-void sendUSART(UART_HandleTypeDef *huart, char _out[], GPIO_TypeDef *GPIOX, int GPIO_Pin)
-{
-	HAL_StatusTypeDef ret;
-	ret = HAL_UART_Transmit(huart, (uint8_t *) _out, strlen(_out), 10);
-	HAL_Delay(5000);
-	if (ret == HAL_OK) {
-		HAL_GPIO_TogglePin(GPIOX, GPIO_Pin);
-	}
-}
+//**********************************************************************
+//  HELPER RN4020 Functions (END)
+//**********************************************************************
+
 //**********************************************************************
 //  RN4020 Functions (START)
 //**********************************************************************
@@ -375,6 +401,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
+//      ----------------------------------------------------------------------------------------
 //		POLLING FOR UART
 //		HAL_UART_Receive(&huart1, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
 //		HAL_UART_Transmit(&huart1, (uint8_t *)"\n\r", strlen("\n\r"), 100);
@@ -389,7 +416,7 @@ int main(void)
 
 //		HAL_USART_Receive(&husart2, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
 //		HAL_USART_Transmit(&husart2, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
-
+//      ----------------------------------------------------------------------------------------
 
 	}
   /* USER CODE END 3 */
