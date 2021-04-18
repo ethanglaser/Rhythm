@@ -1,14 +1,14 @@
 package com.tolkiana.spotifyplayer
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.coroutines.*
 import java.util.*
 import kotlin.math.abs
-import android.os.Handler;
 
 
 class PlayerActivity : AppCompatActivity() {
@@ -17,7 +17,7 @@ class PlayerActivity : AppCompatActivity() {
         val playlistDict=intent.getStringExtra("playlistDict")
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
-        setupViews()
+        setImage()
         setupListeners()
         //SpotifyService.suscribeToChanges()
         val dict: Map<String, Song> = SpotifyService.jsonHandler(playlistDict)
@@ -30,9 +30,7 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun setupViews () {
-        SpotifyService.getCurrentTrackImage {
-            trackImageView.setImageBitmap(it)
-        }
+        setImage()
 
         SpotifyService.playingState {
             when(it) {
@@ -80,47 +78,55 @@ class PlayerActivity : AppCompatActivity() {
         resumeButton.visibility = View.VISIBLE
     }
 
+    private fun setText(text: TextView, value: String) {
+        runOnUiThread(
+            Runnable {
+                Log.d("textset", "runOnUiThread")
+                runOnUiThread { text.text = value }
+            })
+    }
+
+    private fun setImage() {
+        runOnUiThread(
+                Runnable {
+                    Log.d("imgset", "runOnUiThread")
+                    runOnUiThread {
+                        SpotifyService.getCurrentTrackImage {
+                            trackImageView.setImageBitmap(it)
+                        }
+                    }
+                })
+    }
 
     fun rhythm(dict: Map<String, Song>) {
         var waitTime = firstSong(dict)
         CoroutineScope(Dispatchers.IO).launch {
             delay(2500)
+            setText(actualBattery, "100 %")
             withContext(Dispatchers.Main) {
-                SpotifyService.getCurrentTrackImage {
-                    trackImageView.setImageBitmap(it)
-                }
+                setImage()
             }
         }
         CoroutineScope(Dispatchers.IO).launch {
             delay(5000)
-            withContext(Dispatchers.Main) {
+            var status = true
+            withContext(Dispatchers.IO) {
                 while(true) {
-                    Thread.sleep(waitTime.toLong() - 30000)
-                    waitTime = queueNew(dict)
-
-                    Thread.sleep(31000)
-                    SpotifyService.getCurrentTrackImage {
-                        trackImageView.setImageBitmap(it)
-                    }
-                }
-                /*while (true) {
-                    rhythm(dict)
-                    CoroutineScope(Dispatchers.IO).launch {
-                        delay(30000)
-                        withContext(Dispatchers.Main) {
-                            SpotifyService.getCurrentTrackImage {
-                                trackImageView.setImageBitmap(it)
-                            }
+                    if (status){
+                        status = false
+                        GlobalScope.launch {
+                        delay(waitTime.toLong() - 30000)
+                        waitTime = queueNew(dict)
+                        GlobalScope.launch {
+                            status = true
+                            delay(32000)
+                            setImage()
                         }
                     }
-                }*/
+                    }
+                }
             }
         }
-
-
-                    /*SpotifyService.getCurrentTrackImage {
-            trackImageView.setImageBitmap(it)
-        }*/
     }
 
     private fun firstSong(dict: Map<String, Song>): Int {
@@ -128,7 +134,8 @@ class PlayerActivity : AppCompatActivity() {
         var first = dict.entries.elementAt(random.nextInt(dict.size))
         Log.d("a", first.toString())
         SpotifyService.play(first.key)
-        return first.value.duration - 30000
+        setText(actualTempo, first.value.tempo.toString())
+        return first.value.duration
     }
 
     fun queueNew(dict: Map<String, Song>): Int {
@@ -137,14 +144,18 @@ class PlayerActivity : AppCompatActivity() {
         var tempo = random.nextGaussian() * 35 + 150
         Log.d("TEMPO", tempo.toString())
         var closestsong = ""
-        var closestvalue = 100.0
+        var closestvalue = 1000.0
+        var songtempo = 0.0
         for ((k, v) in dict) {
             if (abs(tempo - v.tempo) < closestvalue) {
+                songtempo = v.tempo
                 closestvalue = abs(tempo - v.tempo)
                 closestsong = k
                 waitTime = v.duration
             }
         }
+        setText(actualWorkout, tempo.toString())
+        setText(actualTempo, songtempo.toString())
         Log.d("SONG", dict[closestsong].toString())
         SpotifyService.queue(closestsong)
         return waitTime

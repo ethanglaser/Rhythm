@@ -1,9 +1,14 @@
 package com.tolkiana.spotifyplayer
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.BluetoothLeScanner
 import android.content.Intent
+import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.support.annotation.RequiresApi
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -14,9 +19,24 @@ class MainActivity : AppCompatActivity() {
     lateinit var bAdapter:BluetoothAdapter
     private val REQUEST_CODE_ENABLE_BT:Int = 1;
 
+    //@RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
+        /*// Initializes Bluetooth adapter.
+        val bluetoothManager = getSystemService(BluetoothManager::class.java)
+        val bluetoothAdapter: BluetoothAdapter? = bluetoothManager?.adapter
+        // Ensures Bluetooth is available on the device and it is enabled. If not,
+        // displays a dialog requesting user permission to enable Bluetooth.
+        if (bluetoothAdapter != null && !bluetoothAdapter.isEnabled) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            startActivityForResult(enableBtIntent, REQUEST_CODE_ENABLE_BT)
+        }*/
+
+
+
 
         //BLUETOOTH CODE
         bAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -47,6 +67,40 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    /*
+    private val bluetoothLeScanner: BluetoothLeScanner? = bluetoothAdapter?.bluetoothLeScanner
+    private var scanning = false
+    private val handler = Handler()
+
+    // Stops scanning after 10 seconds.
+    private val SCAN_PERIOD: Long = 10000
+
+    private fun scanLeDevice() {
+        bluetoothLeScanner?.let { scanner ->
+            if (!scanning) { // Stops scanning after a pre-defined scan period.
+                handler.postDelayed({
+                    scanning = false
+                    scanner.stopScan(leScanCallback)
+                }, SCAN_PERIOD)
+                scanning = true
+                scanner.startScan(leScanCallback)
+            } else {
+                scanning = false
+                scanner.stopScan(leScanCallback)
+            }
+        }
+    }
+    private val leDeviceListAdapter = LeDeviceListAdapter()
+    // Device scan callback.
+    private val leScanCallback: ScanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            super.onScanResult(callbackType, result)
+            leDeviceListAdapter.addDevice(result.device)
+            leDeviceListAdapter.notifyDataSetChanged()
+        }
+    }*/
+
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -59,3 +113,4 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 }
+
