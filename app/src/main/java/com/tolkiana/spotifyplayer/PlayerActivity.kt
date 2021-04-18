@@ -18,8 +18,8 @@ class PlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
         setImage()
-        setupListeners()
-        //SpotifyService.suscribeToChanges()
+        //setupListeners()
+        SpotifyService.suscribeToChanges()
         val dict: Map<String, Song> = SpotifyService.jsonHandler(playlistDict)
         rhythm(dict)
     }
@@ -27,55 +27,6 @@ class PlayerActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         SpotifyService.disconnect()
-    }
-
-    private fun setupViews () {
-        setImage()
-
-        SpotifyService.playingState {
-            when(it) {
-                PlayingState.PLAYING -> showPauseButton()
-                PlayingState.STOPPED -> showPlayButton()
-                PlayingState.PAUSED -> showResumeButton()
-            }
-        }
-    }
-
-    private fun setupListeners() {
-        playButton.setOnClickListener {
-            SpotifyService.play("spotify:album:5L8VJO457GXReKVVfRhzyM")
-            showPauseButton()
-        }
-
-        pauseButton.setOnClickListener {
-            SpotifyService.pause()
-            showResumeButton()
-        }
-
-        resumeButton.setOnClickListener {
-            SpotifyService.resume()
-            showPauseButton()
-        }
-
-        SpotifyService.suscribeToChanges()
-    }
-
-    private fun showPlayButton() {
-        playButton.visibility = View.VISIBLE
-        pauseButton.visibility = View.GONE
-        resumeButton.visibility = View.GONE
-    }
-
-    private fun showPauseButton() {
-        playButton.visibility = View.GONE
-        pauseButton.visibility = View.VISIBLE
-        resumeButton.visibility = View.GONE
-    }
-
-    private fun showResumeButton() {
-        playButton.visibility = View.GONE
-        pauseButton.visibility = View.GONE
-        resumeButton.visibility = View.VISIBLE
     }
 
     private fun setText(text: TextView, value: String) {
@@ -109,6 +60,7 @@ class PlayerActivity : AppCompatActivity() {
         }
         CoroutineScope(Dispatchers.IO).launch {
             delay(5000)
+            setImage()
             var status = true
             withContext(Dispatchers.IO) {
                 while(true) {

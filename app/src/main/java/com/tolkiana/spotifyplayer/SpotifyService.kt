@@ -123,45 +123,6 @@ object SpotifyService {
             }
         }
     }
-    fun sendGetRequest(userName: String, password: String) {
-
-        var reqParam = URLEncoder.encode("username", "UTF-8") + "=" + URLEncoder.encode(
-                userName,
-                "UTF-8"
-        )
-        reqParam += "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(
-                password,
-                "UTF-8"
-        )
-
-        val mURL = URL("<Yout API Link>?" + reqParam)
-
-        with(mURL.openConnection() as HttpURLConnection) {
-            // optional default is GET
-            requestMethod = "GET"
-
-            println("URL : $url")
-            println("Response Code : $responseCode")
-
-            BufferedReader(InputStreamReader(inputStream)).use {
-                val response = StringBuffer()
-
-                var inputLine = it.readLine()
-                while (inputLine != null) {
-                    response.append(inputLine)
-                    inputLine = it.readLine()
-                }
-                it.close()
-                println("Response : $response")
-            }
-        }
-    }
-
-    fun executeCommandLine() {
-        val comd = "curl -X 'GET' 'https://api.spotify.com/v1/playlists/2Y9WARZQEcDiWrYItwSe7d' -H 'Accept: application/json' -H 'Content-Type: application/json' -H 'Authorization: Bearer BQAUb2EALqMApwkJjwuFaAvMyzp7lPNzUjE9nMNproyWH2b_J3PQ9J0jbOBAyf22r0pXaJe215cw1Tv4ZaULLVgIggvPgnAneq0gyb0TALCSjdNeP_H8B09ZiExrubsE_oGV3cZShgfzzSNlCZi4ZXWlhjXqtH8HlJDYqWU4fZfMT4RoiUV8VY0t-LdkuL1sZiTkZruf-gh3ejvCrIEvHI9Wh9UIG2aUmJ2g7eSF7Ws9hm0-UGUpeUw5_RAJm_wZLeFOH0m0DSM47_TrJf-plUzoSA'"
-        val process = Runtime.getRuntime().exec(comd)
-        Log.d("STUFF", process.inputStream.toString())
-    }
 
     fun jsonHandler(playlistDict: String): Map<String, Song> {
         val gson = GsonBuilder().create()
