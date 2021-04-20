@@ -18,7 +18,6 @@ class PlayerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_player)
         setImage()
-        //setupListeners()
         SpotifyService.suscribeToChanges()
         val dict: Map<String, Song> = SpotifyService.jsonHandler(playlistDict)
         rhythm(dict)
@@ -32,7 +31,6 @@ class PlayerActivity : AppCompatActivity() {
     private fun setText(text: TextView, value: String) {
         runOnUiThread(
             Runnable {
-                Log.d("textset", "runOnUiThread")
                 runOnUiThread { text.text = value }
             })
     }
@@ -40,7 +38,6 @@ class PlayerActivity : AppCompatActivity() {
     private fun setImage() {
         runOnUiThread(
                 Runnable {
-                    Log.d("imgset", "runOnUiThread")
                     runOnUiThread {
                         SpotifyService.getCurrentTrackImage {
                             trackImageView.setImageBitmap(it)
