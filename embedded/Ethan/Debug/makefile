@@ -61,8 +61,8 @@ all: main-build
 main-build: Ethan.elf secondary-outputs
 
 # Tool invocations
-Ethan.elf: $(OBJS) $(USER_OBJS) C:\Users\glase\STM32CubeIDE\workspace_1.6.0\Ethan\STM32L053R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Ethan.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\glase\STM32CubeIDE\workspace_1.6.0\Ethan\STM32L053R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Ethan.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Ethan.elf: $(OBJS) $(USER_OBJS) C:\Users\glase\Purdue\ECE477\Rhythm\embedded\Ethan\STM32L053R8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Ethan.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\glase\Purdue\ECE477\Rhythm\embedded\Ethan\STM32L053R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Ethan.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

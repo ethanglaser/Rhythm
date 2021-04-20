@@ -20,7 +20,7 @@
 #include "string.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "stm32l0xx_hal.h"
+//#include "stm32l0xx_hal.h"
 
 //#include <SparkFunBQ27441.h>
 
@@ -109,124 +109,46 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint16_t Main_ADDR = 0x55 << 1; // Use 8-bit address
+
+  //important address definitions
+  uint16_t Main_ADDR = 0x55 << 1;
+  uint16_t rem = 0x0C;
+  uint16_t full = 0x0E;
 
   HAL_StatusTypeDef ret;
   HAL_StatusTypeDef ret2;
 
   uint8_t data[2];
-  uint8_t test = 0x0C;
-  uint8_t buf[12];
-  int16_t val;
-  float temp_c;
   uint8_t data2[2];
+  int bigbattery = 0;
 
     while (1)
     {
-  	  uint16_t rem = 0x0C;
-  	  uint16_t full = 0x0E;
-
-      /*uint8_t subCommandMSB = (function >> 8);
-      uint8_t subCommandLSB = (function & 0x00FF);
-      uint8_t command[2] = {subCommandLSB, subCommandMSB};*/
-      uint8_t data[2];
-      uint8_t data2[2];
-
   	  ret = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, data, 2, HAL_MAX_DELAY);
   	  ret2 = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, data2, 2, HAL_MAX_DELAY);
 
   	  if ( ret != HAL_OK || ret2 != HAL_OK ) {
-  		  HAL_USART_Transmit(&husart2, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
+  		  HAL_USART_Transmit(&husart1, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
   	  }
   	  else {
-  		  char bef[4] = {0,0,0,0}; //create an empty string to store number
-  		  char aft[4] = {0,0,0,0}; //create an empty string to store number
+  		  char integer[4] = {0,0,0,0}; //create an empty string to store number
+  		  char decimal[4] = {0,0,0,0}; //create an empty string to store number
   		  uint16_t finalval = ((uint16_t) data[1] << 8) | data[0];
   		  uint16_t finalval2 = ((uint16_t) data2[1] << 8) | data2[0];
-  		  int stuff = 100000 * finalval / finalval2;
-  	      sprintf(bef, "%d", stuff / 1000);
-  	      sprintf(aft, "%03d", stuff % 1000);
-  		  HAL_USART_Transmit(&husart2, (uint8_t *) "BATTERY LEVEL: ", strlen("BATTERY LEVEL: "), 100);
-  		  HAL_USART_Transmit(&husart2, &bef, 4, 100);
-  		  HAL_USART_Transmit(&husart2, (uint8_t *) ".", strlen("."), 100);
-  		  HAL_USART_Transmit(&husart2, &aft, 4, 100);
-  		  HAL_USART_Transmit(&husart2, (uint8_t *) "%\r\n", strlen("%\r\n"), 100);
+  		  bigbattery = 100000 * finalval / finalval2;
+  	      sprintf(integer, "%d", bigbattery / 1000);
+  	      sprintf(decimal, "%03d", bigbattery % 1000);
+  		  HAL_USART_Transmit(&husart1, (uint8_t *) "BATTERY LEVEL: ", strlen("BATTERY LEVEL: "), 100);
+  		  HAL_USART_Transmit(&husart1, &integer, 4, 100);
+  		  HAL_USART_Transmit(&husart1, (uint8_t *) ".", strlen("."), 100);
+  		  HAL_USART_Transmit(&husart1, &decimal, 4, 100);
+  		  HAL_USART_Transmit(&husart1, (uint8_t *) "%\r\n", strlen("%\r\n"), 100);
 
   	  }
-  	  /*ret = HAL_I2C_Master_Transmit(&hi2c1, Main_ADDR, command, 2, 2000);
-  	  if ( ret != HAL_OK ) {
-  		  HAL_USART_Transmit(&husart1, (uint8_t *) " TRANSMIT ERROR", strlen(" TRANSMIT ERROR"), 100);
-  		  HAL_USART_Transmit(&husart2, (uint8_t *) " TRANSMIT ERROR", strlen(" TRANSMIT ERROR"), 100);
-  	  }
-  	  else {
-  		  ret = HAL_I2C_Master_Receive(&hi2c1, Main_ADDR | 0x01, data2, 2, 2000);
-  		  if ( ret != HAL_OK ) {
-  			  HAL_USART_Transmit(&husart1, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
-  			  HAL_USART_Transmit(&husart2, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
-  		  }
-  		  else {
-  			  uint16_t valll = (((data2[0] & 0x0F) << 8) | data2[1]);
-  		      uint16_t vall = ((int16_t)data2[0] << 4) | (data2[1] >> 4);
-  			  uint16_t finalval = ((uint16_t)data2[1] << 8) | data2[0];
-  			  if (finalval == 0x0421) {
-  	  			  HAL_USART_Transmit(&husart1, (uint8_t *) " YIPPEE", strlen(" YIPPEE"), 100);
-  	  			  HAL_USART_Transmit(&husart2, (uint8_t *) " YIPPEE", strlen(" YIPPEE"), 100);
-  			  }
-  			  ret2 = HAL_USART_Transmit(&husart1, finalval, sizeof(uint16_t), 100);
-  			  ret2 = HAL_USART_Transmit(&husart2, finalval, sizeof(uint16_t), 100);
-  		  }
-  	  }*/
   	  if (ret == HAL_OK) {
   		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
   	  }
-	  HAL_Delay(1000);
-    }
-
-  //val = ((int16_t)buf[0] << 4) | (buf[1] >> 4);
-
-  //HAL_USART_Transmit(&husart2, (uint8_t *) buf, 12, 10);
-
-  //sprintf((char*)buf, "%d \r\n", val);
-  while (1)
-  {
-	  buf[0] = test;
-	  ret = HAL_I2C_Master_Transmit(&hi2c1, Main_ADDR, buf, 1, 1000);
-
-	  //HAL_USART_Transmit(&husart2, (uint8_t *) ret, sizeof(HAL_StatusTypeDef), 10);
-	  if ( ret != HAL_OK ) {
-		  HAL_USART_Transmit(&husart2, (uint8_t *) " TRANSMIT ERROR", strlen(" TRANSMIT ERROR"), 10);
-	  }
-	  else {
-		  //HAL_USART_Transmit(&husart2, (uint8_t *) " GREATT SUCCESS", strlen(" GREATT SUCCESS"), 10);
-		  ret = HAL_I2C_Master_Receive(&hi2c1, Main_ADDR, data, 2, 1000);
-		  if ( ret != HAL_OK ) {
-			  HAL_USART_Transmit(&husart2, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 10);
-		  }
-		  else {
-			  val = ((int16_t)buf[0] << 4) | (buf[1] >> 4);
-		      if ( val > 0x7FF ) {
-		        val |= 0xF000;
-		      }
-		      temp_c = val * 1.0;
-		      sprintf((char*)buf,
-		            "%u \%\r\n",
-		            (unsigned int)temp_c);
-
-			  HAL_USART_Transmit(&husart2, buf, strlen((char*)buf), 10);
-			  //HAL_USART_Transmit(&husart2, (uint8_t *) " GREATR SUCCESS", strlen(" GREATR SUCCESS"), 10);
-		  }
-	  }
-	  /*ret = HAL_I2C_Master_Receive(&hi2c1, Main_ADDR, buf, 2, 1000);
-	  if ( ret != HAL_OK ) {
-		  HAL_USART_Transmit(&husart2, (uint8_t *) "TX ERROR", strlen("RX ERROR"), 10);
-	  }*/
-	  /*
-	  HAL_USART_Transmit(&husart2, (uint8_t *) "Hello, world!", strlen("Hello, world!"), 10);
-	  //debugPrint(&husart2, "oi, mate!"); // print*/
-	  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-
-
-	  HAL_Delay(1000);
+	  HAL_Delay(10000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

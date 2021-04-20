@@ -1,0 +1,175 @@
+-- Merging decision tree log ---
+manifest
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\ee41a26660b8173818d9cea4ad896c34\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\1e5153b1f6a5bab95eb6e7b33ac4489b\AndroidManifest.xml:2:1-11:12
+MERGED from [:spotify-app-remote-release-0.6.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\spotify-app-remote-release-0.6.0.aar\b4eed65425c91f53094c0e58d0f38b34\AndroidManifest.xml:22:1-33:12
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\7e5786c29a8e6a351758a31b5afb75fa\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\7f4c1ee0d0af09e0bd9a139ee8b3a4f4\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\2d732edff31fa114a0bfee661e98bce1\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\f32344a8046ec1e9f74ecd3cd22c0741\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\10814b976600c134698b888e7d199f4a\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:loader:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\49796cf2a5f2b90186e51947cd31f77e\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\4fedfc39ce5d59bb7393e69dc8bc504d\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\c4d89b8408180b466c4d1808cf97b39e\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\1dc1ffd7802fd5f74e69f3c46c07768a\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\ee86767c99c9f5a7beb7cca072e61896\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:customview:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\1b00f3b244f4f39718f424bda23a4a8c\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\9075ef5394177ed39172d09f5aee5bdd\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\0a9e61d11cc68df304da74548a702a45\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\e908cf2a0272a6d3df9cda8f8969bec8\AndroidManifest.xml:17:1-24:12
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\6c16f4d40a9ff603ab1030611ad075e5\AndroidManifest.xml:17:1-25:12
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\417188973e9aeaaf9b0e2eac4917687b\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\02303e6e381231a786cdf89a84743ef6\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\0f2335c6a34c549aa17ccb9e6e352661\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\465800d949ec1d5cc03e1edcf7f350be\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:print:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\ce154951748ee26e800898932050f21f\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\d034de9cc9a8c747543154d4fdbc4f45\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\bbdd1307b287df32b68f0791778eb4e0\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\a6351551aae8f81a952251b661fee9fb\AndroidManifest.xml:17:1-22:12
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\73e65fde75404106c51cb579890e7f56\AndroidManifest.xml:17:1-22:12
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\d81aa3bae8f0c65c95e45f3062bbb55c\AndroidManifest.xml:17:1-22:12
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+	package
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:3:11-47
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+	android:versionName
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+	android:versionCode
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:1-27:12
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+	xmlns:android
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:2:11-69
+uses-permission#android.permission.BLUETOOTH
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:5:5-67
+	android:name
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:5:22-65
+uses-permission#android.permission.BLUETOOTH_ADMIN
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:6:5-73
+	android:name
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:6:22-71
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:7:5-79
+	android:name
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:7:22-76
+application
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:9:5-25:19
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\1e5153b1f6a5bab95eb6e7b33ac4489b\AndroidManifest.xml:9:5-20
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\1e5153b1f6a5bab95eb6e7b33ac4489b\AndroidManifest.xml:9:5-20
+MERGED from [:spotify-app-remote-release-0.6.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\spotify-app-remote-release-0.6.0.aar\b4eed65425c91f53094c0e58d0f38b34\AndroidManifest.xml:31:5-20
+MERGED from [:spotify-app-remote-release-0.6.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\spotify-app-remote-release-0.6.0.aar\b4eed65425c91f53094c0e58d0f38b34\AndroidManifest.xml:31:5-20
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\e908cf2a0272a6d3df9cda8f8969bec8\AndroidManifest.xml:22:5-94
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\e908cf2a0272a6d3df9cda8f8969bec8\AndroidManifest.xml:22:5-94
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\6c16f4d40a9ff603ab1030611ad075e5\AndroidManifest.xml:22:5-23:19
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\6c16f4d40a9ff603ab1030611ad075e5\AndroidManifest.xml:22:5-23:19
+	android:appComponentFactory
+		ADDED from [com.android.support:support-compat:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\e908cf2a0272a6d3df9cda8f8969bec8\AndroidManifest.xml:22:18-91
+	android:supportsRtl
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:14:13-39
+	android:label
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:12:13-45
+	android:roundIcon
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:13:13-58
+	android:icon
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:11:13-47
+	android:allowBackup
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:10:13-39
+	android:theme
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:15:13-44
+activity#com.tolkiana.spotifyplayer.PlayerActivity
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:16:9-17:20
+	android:name
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:16:19-49
+activity#com.tolkiana.spotifyplayer.MainActivity
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:18:9-24:20
+	android:name
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:18:19-47
+intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:19:13-23:29
+action#android.intent.action.MAIN
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:20:17-68
+	android:name
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:20:25-66
+category#android.intent.category.LAUNCHER
+ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:22:17-76
+	android:name
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml:22:27-74
+uses-sdk
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\ee41a26660b8173818d9cea4ad896c34\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:appcompat-v7:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\appcompat-v7-28.0.0.aar\ee41a26660b8173818d9cea4ad896c34\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\1e5153b1f6a5bab95eb6e7b33ac4489b\AndroidManifest.xml:5:5-7:41
+MERGED from [com.android.support.constraint:constraint-layout:1.1.3] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\constraint-layout-1.1.3.aar\1e5153b1f6a5bab95eb6e7b33ac4489b\AndroidManifest.xml:5:5-7:41
+MERGED from [:spotify-app-remote-release-0.6.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\spotify-app-remote-release-0.6.0.aar\b4eed65425c91f53094c0e58d0f38b34\AndroidManifest.xml:27:5-29:41
+MERGED from [:spotify-app-remote-release-0.6.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\spotify-app-remote-release-0.6.0.aar\b4eed65425c91f53094c0e58d0f38b34\AndroidManifest.xml:27:5-29:41
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\7e5786c29a8e6a351758a31b5afb75fa\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-fragment:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-fragment-28.0.0.aar\7e5786c29a8e6a351758a31b5afb75fa\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\7f4c1ee0d0af09e0bd9a139ee8b3a4f4\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:animated-vector-drawable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\animated-vector-drawable-28.0.0.aar\7f4c1ee0d0af09e0bd9a139ee8b3a4f4\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\2d732edff31fa114a0bfee661e98bce1\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-ui:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-core-ui-28.0.0.aar\2d732edff31fa114a0bfee661e98bce1\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\f32344a8046ec1e9f74ecd3cd22c0741\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-core-utils:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-core-utils-28.0.0.aar\f32344a8046ec1e9f74ecd3cd22c0741\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\10814b976600c134698b888e7d199f4a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-vector-drawable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-vector-drawable-28.0.0.aar\10814b976600c134698b888e7d199f4a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:loader:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\49796cf2a5f2b90186e51947cd31f77e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:loader:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\loader-28.0.0.aar\49796cf2a5f2b90186e51947cd31f77e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\4fedfc39ce5d59bb7393e69dc8bc504d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:viewpager:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\viewpager-28.0.0.aar\4fedfc39ce5d59bb7393e69dc8bc504d\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\c4d89b8408180b466c4d1808cf97b39e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:coordinatorlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\coordinatorlayout-28.0.0.aar\c4d89b8408180b466c4d1808cf97b39e\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\1dc1ffd7802fd5f74e69f3c46c07768a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:drawerlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\drawerlayout-28.0.0.aar\1dc1ffd7802fd5f74e69f3c46c07768a\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\ee86767c99c9f5a7beb7cca072e61896\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:slidingpanelayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\slidingpanelayout-28.0.0.aar\ee86767c99c9f5a7beb7cca072e61896\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:customview:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\1b00f3b244f4f39718f424bda23a4a8c\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:customview:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\customview-28.0.0.aar\1b00f3b244f4f39718f424bda23a4a8c\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\9075ef5394177ed39172d09f5aee5bdd\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:swiperefreshlayout:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\swiperefreshlayout-28.0.0.aar\9075ef5394177ed39172d09f5aee5bdd\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\0a9e61d11cc68df304da74548a702a45\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:asynclayoutinflater:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\asynclayoutinflater-28.0.0.aar\0a9e61d11cc68df304da74548a702a45\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\e908cf2a0272a6d3df9cda8f8969bec8\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:support-compat:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\support-compat-28.0.0.aar\e908cf2a0272a6d3df9cda8f8969bec8\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\6c16f4d40a9ff603ab1030611ad075e5\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:versionedparcelable:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\versionedparcelable-28.0.0.aar\6c16f4d40a9ff603ab1030611ad075e5\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\417188973e9aeaaf9b0e2eac4917687b\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:cursoradapter:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\cursoradapter-28.0.0.aar\417188973e9aeaaf9b0e2eac4917687b\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\02303e6e381231a786cdf89a84743ef6\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:runtime:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\02303e6e381231a786cdf89a84743ef6\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\0f2335c6a34c549aa17ccb9e6e352661\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:documentfile:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\documentfile-28.0.0.aar\0f2335c6a34c549aa17ccb9e6e352661\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\465800d949ec1d5cc03e1edcf7f350be\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:localbroadcastmanager:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\localbroadcastmanager-28.0.0.aar\465800d949ec1d5cc03e1edcf7f350be\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:print:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\ce154951748ee26e800898932050f21f\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:print:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\print-28.0.0.aar\ce154951748ee26e800898932050f21f\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\d034de9cc9a8c747543154d4fdbc4f45\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:viewmodel:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\viewmodel-1.1.1.aar\d034de9cc9a8c747543154d4fdbc4f45\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\bbdd1307b287df32b68f0791778eb4e0\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\livedata-1.1.1.aar\bbdd1307b287df32b68f0791778eb4e0\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\a6351551aae8f81a952251b661fee9fb\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.lifecycle:livedata-core:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\livedata-core-1.1.1.aar\a6351551aae8f81a952251b661fee9fb\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\73e65fde75404106c51cb579890e7f56\AndroidManifest.xml:20:5-44
+MERGED from [android.arch.core:runtime:1.1.1] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\runtime-1.1.1.aar\73e65fde75404106c51cb579890e7f56\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\d81aa3bae8f0c65c95e45f3062bbb55c\AndroidManifest.xml:20:5-44
+MERGED from [com.android.support:interpolator:28.0.0] C:\Users\glase\.gradle\caches\transforms-1\files-1.1\interpolator-28.0.0.aar\d81aa3bae8f0c65c95e45f3062bbb55c\AndroidManifest.xml:20:5-44
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+		ADDED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml
+		INJECTED from C:\Users\glase\Purdue\ECE477\Rhythm\app\src\main\AndroidManifest.xml

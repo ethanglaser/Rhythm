@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="Gradle: artifacts:spotify-app-remote-release-0.6.0:unspecified">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/spotify-app-remote-release-0.6.0.aar/b4eed65425c91f53094c0e58d0f38b34/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/spotify-app-remote-release-0.6.0.aar/b4eed65425c91f53094c0e58d0f38b34/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-1/files-1.1/spotify-app-remote-release-0.6.0.aar/b4eed65425c91f53094c0e58d0f38b34/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
