@@ -17,6 +17,7 @@
   ******************************************************************************
   */
 #include <stdlib.h>
+//
 #include "string.h"
 //#include "rn4020.c"
 /* USER CODE END Header */
@@ -46,10 +47,17 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+
+//-------------------------------------------------------------------------------
+// RN4020 Global Variables
+//-------------------------------------------------------------------------------
 RN4020_State currState;
 uint8_t rxBuffer[3];
 uint8_t rxBuffer2[5];
@@ -57,6 +65,16 @@ uint8_t compareAOK[3] = {'A','O','K'};
 uint8_t compareCMD[3] = {'C', 'M', 'D'};
 uint8_t compareREB[3] = {'R', 'E', 'B'};
 uint8_t compareREBOOT[6] = {'R', 'E', 'B', 'O', 'O', 'T'};
+//-------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------
+// Battery Babysitter Global Variables
+//-------------------------------------------------------------------------------
+//important address definitions
+  uint16_t Main_ADDR = 0x55 << 1;
+  uint16_t rem = 0x0C;
+  uint16_t full = 0x0E;
+  //-------------------------------------------------------------------------------
 
 /* USER CODE END PV */
 
@@ -64,7 +82,8 @@ uint8_t compareREBOOT[6] = {'R', 'E', 'B', 'O', 'O', 'T'};
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_USART2_UART_Init(void);
+static void MX_I2C1_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 //**********************************************************************
@@ -74,6 +93,8 @@ static void MX_USART2_UART_Init(void);
 int RN4020_resetDefaultStep(UART_HandleTypeDef *huart);
 
 HAL_StatusTypeDef RN4020_resetToFactoryDefault(UART_HandleTypeDef *huart);
+
+HAL_StatusTypeDef RN4020_killConnection(UART_HandleTypeDef *huart);
 
 HAL_StatusTypeDef RN4020_setBaudRate115200(UART_HandleTypeDef *huart);
 
@@ -173,6 +194,10 @@ int RN4020_resetDefaultStep(UART_HandleTypeDef *huart) {
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		completeFlag = FALSE;
 	}
+//	if (RN4020_killConnection(huart) != HAL_OK) {
+//			HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//			completeFlag = FALSE;
+//		}
 	if (RN4020_setBaudRate115200(huart) != HAL_OK) {
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		completeFlag = FALSE;
@@ -210,8 +235,12 @@ HAL_StatusTypeDef RN4020_resetToFactoryDefault(UART_HandleTypeDef *huart) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
 	RN4020_sendData(huart, "SF,1\r\n");
 	return RN4020_waitForReadyState();
-}
-
+	}
+HAL_StatusTypeDef RN4020_killConnection(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "K\r\n");
+	return RN4020_waitForReadyState();
+	}
 HAL_StatusTypeDef RN4020_setBaudRate115200(UART_HandleTypeDef *huart) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
 	RN4020_sendData(huart, "SB,4\r\n");
@@ -220,7 +249,7 @@ HAL_StatusTypeDef RN4020_setBaudRate115200(UART_HandleTypeDef *huart) {
 
 HAL_StatusTypeDef RN4020_setService(UART_HandleTypeDef *huart) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
-	RN4020_sendData(huart, "SS,80000000\r\n");
+	RN4020_sendData(huart, "SS,C0000000\r\n");
 	return RN4020_waitForReadyState();
 	}
 HAL_StatusTypeDef RN4020_clearPrivateSettings(UART_HandleTypeDef *huart) {
@@ -247,6 +276,15 @@ HAL_StatusTypeDef RN4020_rebootDevice(UART_HandleTypeDef *huart) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_REBOOT);
 	RN4020_sendData(huart, "R,1\r\n");
 	return RN4020_waitForReadyState();
+	}
+
+HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, char* batteryLevel) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "SUW,2A19,");
+	RN4020_sendData(huart, batteryLevel);
+	RN4020_sendData(huart, "\r\n");
+	//return RN4020_waitForReadyState();
+	return HAL_OK;
 	}
 
 //Uses global variable currState
@@ -313,6 +351,42 @@ void RN4020_sendData(UART_HandleTypeDef *huart, const char* line) {
 //  RN4020 Functions (END)
 //**********************************************************************
 
+
+void babysitter_SendData() {
+	//Variables for babysitter interrupt
+	HAL_StatusTypeDef ret;
+	HAL_StatusTypeDef ret2;
+	uint8_t data[2];
+	uint8_t data2[2];
+	int bigbattery = 0;
+
+	ret = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, data, 2, HAL_MAX_DELAY);
+	ret2 = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, data2, 2, HAL_MAX_DELAY);
+
+	if ( ret != HAL_OK || ret2 != HAL_OK ) {
+		HAL_UART_Transmit(&huart1, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
+	}
+	else {
+		char integer[4] = {0,0,0,0}; //create an empty string to store number
+		char decimal[4] = {0,0,0,0}; //create an empty string to store number
+		uint16_t finalval = ((uint16_t) data[1] << 8) | data[0];
+		uint16_t finalval2 = ((uint16_t) data2[1] << 8) | data2[0];
+		bigbattery = 100000 * finalval / finalval2;
+		sprintf(integer, "%d", bigbattery / 1000);
+		sprintf(decimal, "%03d", bigbattery % 1000);
+//		HAL_UART_Transmit(&huart1, (uint8_t *) "BATTERY LEVEL: ", strlen("BATTERY LEVEL: "), 100);
+//		HAL_UART_Transmit(&huart1, &integer, 4, 100);
+//		HAL_UART_Transmit(&huart1, (uint8_t *) ".", strlen("."), 100);
+//		HAL_UART_Transmit(&huart1, &decimal, 4, 100);
+//		HAL_UART_Transmit(&huart1, (uint8_t *) "%\r\n", strlen("%\r\n"), 100);
+		RN4020_sendBatteryLife(&huart1, &integer);
+
+	  }
+//	  if (ret == HAL_OK) {
+//		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//	  }
+
+}
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	//HAL_UART_Transmit(&huart1, (uint8_t *)"Success\n\r", strlen("Success\n\r"), 100);
@@ -352,7 +426,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	int ret;
+	int RN4020_config_ret;
 
   /* USER CODE END 1 */
 
@@ -375,17 +449,30 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
+  MX_I2C1_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // Set PA5 pin off
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 1);
 
-  //Bluetooth LE Configuration Step
+
+//==================================================================================
+//	Bluetooth LE Configuration Step
+//==================================================================================
   HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
-  ret = RN4020_resetDefaultStep(&huart1);
-  if (ret == TRUE) {
+  RN4020_config_ret = RN4020_resetDefaultStep(&huart1);
+  if (RN4020_config_ret == TRUE) {
 	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
   }
-//  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+//==================================================================================
+
+//==================================================================================
+//	Start TIMER2 Step (function @ HAL_TIM_PeriodElapsedCallback)
+//==================================================================================
+  HAL_TIM_Base_Start_IT(&htim2);
+//==================================================================================
+
 
   /* USER CODE END 2 */
 
@@ -438,10 +525,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.MSICalibrationValue = 0;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_5;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -451,8 +537,8 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV8;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
@@ -460,13 +546,104 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_USART2;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-  PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x00000509;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 10000-1;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 1500-1;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
 }
 
 /**
@@ -505,41 +682,6 @@ static void MX_USART1_UART_Init(void)
 }
 
 /**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -550,13 +692,14 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5|GPIO_PIN_4, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PA5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  /*Configure GPIO pins : PA5 PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -565,6 +708,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+	babysitter_SendData();
+}
 
 /* USER CODE END 4 */
 
