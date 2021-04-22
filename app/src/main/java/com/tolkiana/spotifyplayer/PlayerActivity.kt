@@ -49,7 +49,7 @@ class PlayerActivity : AppCompatActivity() {
     fun rhythm(dict: Map<String, Song>) {
         var waitTime = firstSong(dict)
         CoroutineScope(Dispatchers.IO).launch {
-            delay(2500)
+            delay(5000)
             setText(actualBattery, "100 %")
             withContext(Dispatchers.Main) {
                 setImage()

@@ -64,12 +64,15 @@ object SpotifyService {
     }
 
     fun play(uri: String) {
+        Log.d("play","spotify:track:" + uri)
         mSpotifyAppRemote?.playerApi?.play("spotify:track:" + uri)
     }
 
     fun queue(uri: String) {
         val finaluri = "spotify:track:" + uri
-        mSpotifyAppRemote?.playerApi?.queue((finaluri))
+        Log.d("queue","spotify:track:" + uri)
+        mSpotifyAppRemote?.playerApi?.queue("spotify:track:" + uri)
+        Log.d("queued", "queued")
     }
 
     fun resume() {
