@@ -60,6 +60,7 @@ object SpotifyService {
     }
 
     fun disconnect() {
+        Log.d("dc", "he disconnected")
         SpotifyAppRemote.disconnect(mSpotifyAppRemote)
     }
 
