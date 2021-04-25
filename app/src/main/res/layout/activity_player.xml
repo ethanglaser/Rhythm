@@ -9,57 +9,70 @@
 
     <ImageView
         android:id="@+id/trackImageView"
-        android:layout_width="412dp"
-        android:layout_height="554dp"
+        android:layout_width="410dp"
+        android:layout_height="445dp"
         android:contentDescription="Track Image"
         android:scaleType="centerCrop"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textView7"
-        android:layout_width="120dp"
-        android:layout_height="18dp"
-        android:text="Current Workout Tempo"
+        android:layout_width="114dp"
+        android:layout_height="27dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="32dp"
+        android:text="Workout Tempo:"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/actualTempo" />
+        app:layout_constraintTop_toBottomOf="@+id/textView8" />
 
     <TextView
         android:id="@+id/textView8"
         android:layout_width="120dp"
         android:layout_height="20dp"
-        android:text="Song Tempo"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="28dp"
+        android:text="Song Tempo:"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/trackImageView" />
 
     <TextView
         android:id="@+id/textView9"
-        android:layout_width="120dp"
-        android:layout_height="20dp"
-        android:text="Battery % Remaining"
+        android:layout_width="161dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:text="Battery % Remaining:"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/trackImageView" />
+        app:layout_constraintTop_toTopOf="@+id/actualTempo" />
 
     <TextView
         android:id="@+id/actualTempo"
-        android:layout_width="121dp"
+        android:layout_width="117dp"
         android:layout_height="24dp"
         android:text="TextView"
-        app:layout_constraintTop_toBottomOf="@+id/textView8"
-        tools:layout_editor_absoluteX="1dp" />
+        app:layout_constraintStart_toEndOf="@+id/textView8"
+        app:layout_constraintTop_toTopOf="@+id/textView8" />
 
     <TextView
         android:id="@+id/actualWorkout"
-        android:layout_width="122dp"
-        android:layout_height="16dp"
+        android:layout_width="114dp"
+        android:layout_height="29dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
         android:text="Tracking..."
-        app:layout_constraintTop_toBottomOf="@+id/textView7"
-        tools:layout_editor_absoluteX="0dp" />
+        app:layout_constraintStart_toEndOf="@+id/textView7"
+        app:layout_constraintTop_toTopOf="@+id/textView7" />
 
     <TextView
         android:id="@+id/actualBattery"
         android:layout_width="116dp"
         android:layout_height="58dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
         android:text="TextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView9" />

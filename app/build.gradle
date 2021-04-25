@@ -8,7 +8,7 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "com.tolkiana.spotifyplayer"
-        minSdkVersion 14
+        minSdkVersion 15
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -30,6 +30,7 @@ dependencies {
     //testImplementation 'junit:junit:4.12'
     //androidTestImplementation 'com.android.support.test:runner:1.0.2'
     //androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation 'org.jetbrains.anko:anko:0.10.8'
 
     implementation project(':spotify-app-remote-release-0.6.0')
     implementation "com.google.code.gson:gson:2.6.1"
