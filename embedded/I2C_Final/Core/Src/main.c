@@ -80,7 +80,6 @@ uint8_t data[6];
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -138,14 +137,14 @@ int main(void)
   uint8_t deviceID;
   uint8_t pwr1 = 0x80;
   uint8_t pwr1_2 = 0x01;
-  uint8_t pwr2 = 0x38;
-  uint8_t pwr2_2 = 0x00;
+//  uint8_t pwr2 = 0x38;
+//  uint8_t pwr2_2 = 0x00;
   uint8_t rtDiv = 0x00;
-  uint8_t config = 0x05;
-  uint8_t gyroConfig = 0x18;
+//  uint8_t config = 0x05;
+//  uint8_t gyroConfig = 0x18;
   uint8_t accelConfig = 0x18;
   uint8_t accelConfig2 = 0x03;
-  uint8_t intEnable = 0x01;
+//  uint8_t intEnable = 0x01;
 
 //  FILE *fptr = fopen("acc_data.txt", "w+");
 //  if(fptr == NULL){
