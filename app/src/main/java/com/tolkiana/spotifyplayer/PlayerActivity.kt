@@ -1,18 +1,22 @@
 package com.tolkiana.spotifyplayer
 
+import android.os.Build
 import android.os.Bundle
+import android.support.annotation.RequiresApi
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_player.*
 import kotlinx.coroutines.*
+import org.jetbrains.anko.activityManager
 import java.util.*
 import kotlin.math.abs
 
 
 class PlayerActivity : AppCompatActivity() {
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onCreate(savedInstanceState: Bundle?) {
         val playlistDict=intent.getStringExtra("playlistDict")
         super.onCreate(savedInstanceState)
@@ -46,11 +50,13 @@ class PlayerActivity : AppCompatActivity() {
                 })
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun rhythm(dict: Map<String, Song>) {
+        Log.d("PlayerBatter", batteryLevelString)
         var waitTime = firstSong(dict)
         CoroutineScope(Dispatchers.IO).launch {
             delay(5000)
-            setText(actualBattery, "100 %")
+            setText(actualBattery, batteryLevelString)
             withContext(Dispatchers.Main) {
                 setImage()
             }
