@@ -23,6 +23,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <math.h>
+#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -56,6 +58,27 @@ UART_HandleTypeDef huart1;
 /* USER CODE BEGIN PV */
 
 //-------------------------------------------------------------------------------
+// IMU-20602 Global Variables
+//-------------------------------------------------------------------------------
+uint16_t ICM_Main_ADDR = 0x68 << 1;
+uint8_t accXH;
+uint8_t accYH;
+uint8_t accZH;
+uint16_t accXraw;
+uint16_t accYraw;
+uint16_t accZraw;
+
+double temp_sens;
+double accel_sens;
+double accX = 1;
+double accY = 1;
+double accZ = 1;
+double mag;
+
+uint8_t data[6];
+//-------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------
 // RN4020 Global Variables
 //-------------------------------------------------------------------------------
 RN4020_State currState;
@@ -71,10 +94,22 @@ uint8_t compareREBOOT[6] = {'R', 'E', 'B', 'O', 'O', 'T'};
 // Battery Babysitter Global Variables
 //-------------------------------------------------------------------------------
 //important address definitions
-  uint16_t Main_ADDR = 0x55 << 1;
-  uint16_t rem = 0x0C;
-  uint16_t full = 0x0E;
-  //-------------------------------------------------------------------------------
+uint16_t BABY_Main_ADDR = 0x55 << 1;
+uint16_t rem = 0x0C;
+uint16_t full = 0x0E;
+//-------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------
+// Battery Babysitter Global Variables
+//-------------------------------------------------------------------------------
+int increasing = 0;
+int decreasing = 0;
+int prev_increasing = 0;
+int prev_decreasing = 0;
+int prev_value = 0;
+int rotation_counter = 0;
+int rotate = 0;
+//-------------------------------------------------------------------------------
 
 /* USER CODE END PV */
 
@@ -278,10 +313,20 @@ HAL_StatusTypeDef RN4020_rebootDevice(UART_HandleTypeDef *huart) {
 	return RN4020_waitForReadyState();
 	}
 
-HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, char* batteryLevel) {
+HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, const char* batteryLevel) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
 	RN4020_sendData(huart, "SUW,2A19,");
 	RN4020_sendData(huart, batteryLevel);
+	RN4020_sendData(huart, "\r\n");
+	//return RN4020_waitForReadyState();
+	return HAL_OK;
+	}
+
+HAL_StatusTypeDef RN4020_sendBatteryLife_Cadence(UART_HandleTypeDef *huart, const char* batteryLevel, const char* cadence) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "SUW,2A19,");
+	RN4020_sendData(huart, batteryLevel);
+	RN4020_sendData(huart, cadence);
 	RN4020_sendData(huart, "\r\n");
 	//return RN4020_waitForReadyState();
 	return HAL_OK;
@@ -354,32 +399,32 @@ void RN4020_sendData(UART_HandleTypeDef *huart, const char* line) {
 
 void babysitter_SendData() {
 	//Variables for babysitter interrupt
-	HAL_StatusTypeDef ret;
-	HAL_StatusTypeDef ret2;
-	uint8_t data[2];
-	uint8_t data2[2];
+	HAL_StatusTypeDef babysitter_ret;
+	HAL_StatusTypeDef babysitter_ret2;
+	uint8_t BABY_data[2];
+	uint8_t BABY_data2[2];
 	int bigbattery = 0;
 
-	ret = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, data, 2, HAL_MAX_DELAY);
-	ret2 = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, data2, 2, HAL_MAX_DELAY);
+	babysitter_ret = HAL_I2C_Mem_Read(&hi2c1, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
+	babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c1, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
 
-	if ( ret != HAL_OK || ret2 != HAL_OK ) {
+	if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
 		HAL_UART_Transmit(&huart1, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
 	}
 	else {
 		char integer[4] = {0,0,0,0}; //create an empty string to store number
 		char decimal[4] = {0,0,0,0}; //create an empty string to store number
-		uint16_t finalval = ((uint16_t) data[1] << 8) | data[0];
-		uint16_t finalval2 = ((uint16_t) data2[1] << 8) | data2[0];
+		char cadence[6] = {0,0,0,0,0,0};
+		uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
+		uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
 		bigbattery = 100000 * finalval / finalval2;
+
+		sprintf(cadence, "%d", rotation_counter * 2);
 		sprintf(integer, "%d", bigbattery / 1000);
 		sprintf(decimal, "%03d", bigbattery % 1000);
-//		HAL_UART_Transmit(&huart1, (uint8_t *) "BATTERY LEVEL: ", strlen("BATTERY LEVEL: "), 100);
-//		HAL_UART_Transmit(&huart1, &integer, 4, 100);
-//		HAL_UART_Transmit(&huart1, (uint8_t *) ".", strlen("."), 100);
-//		HAL_UART_Transmit(&huart1, &decimal, 4, 100);
-//		HAL_UART_Transmit(&huart1, (uint8_t *) "%\r\n", strlen("%\r\n"), 100);
-		RN4020_sendBatteryLife(&huart1, &integer);
+
+//		RN4020_sendBatteryLife(&huart1, &integer);
+		RN4020_sendBatteryLife_Cadence(&huart1, integer, cadence);
 
 	  }
 //	  if (ret == HAL_OK) {
@@ -428,6 +473,20 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	int RN4020_config_ret;
 
+	HAL_StatusTypeDef ICM_ret = HAL_OK;
+	HAL_StatusTypeDef ICM_ret2 = HAL_OK;
+	HAL_StatusTypeDef ICM_ret3 = HAL_OK;
+	HAL_StatusTypeDef ICM_ret4 = HAL_OK;
+	HAL_StatusTypeDef ICM_ret5 = HAL_OK;
+	HAL_StatusTypeDef ICM_ret6 = HAL_OK;
+
+	uint8_t deviceID;
+	uint8_t pwr1 = 0x80;
+	uint8_t pwr1_2 = 0x01;
+	uint8_t rtDiv = 0x00;
+	uint8_t accelConfig = 0x18;
+	uint8_t accelConfig2 = 0x03;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -454,6 +513,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // Set PA5 pin off
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 1);
 
 
 //==================================================================================
@@ -466,7 +526,38 @@ int main(void)
   }
     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 //==================================================================================
+//==================================================================================
+//	ICM-20602 Configuration Step
+//==================================================================================
+  // read who_am_i
+  ICM_ret = HAL_I2C_Mem_Read(&hi2c1, ICM_Main_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, &deviceID, 1, HAL_MAX_DELAY);
+  HAL_Delay(25);
 
+  // reset IMU
+  ICM_ret2 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1, 1, HAL_MAX_DELAY);
+  HAL_Delay(25);
+
+  // enable temperature sensor and SELECTS the clock source
+  ICM_ret3 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1_2, 1, HAL_MAX_DELAY);
+  HAL_Delay(25);
+  temp_sens = 326.8;
+
+  // set sample rate to 1kHz and apply
+  ICM_ret4 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, SMPLRT_DIV, I2C_MEMADD_SIZE_8BIT, &rtDiv, 1, HAL_MAX_DELAY);
+  HAL_Delay(25);
+
+  // accel full-scale range = 16g(0b11) -- sensitivity scale factor = 2,048 LSB/(dps)
+  ICM_ret5 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, ACCEL_CONFIG, I2C_MEMADD_SIZE_8BIT, &accelConfig, 1, HAL_MAX_DELAY); // ACCEL full-scale range = 16g -- sensitivity scale facotr = 2,048 LSB/(dps)
+  HAL_Delay(25);
+  accel_sens = 2048.0;
+
+  // set A_DLPF_CFG to 3 for accel configuration
+  ICM_ret6 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, ACCEL_CONFIG2, I2C_MEMADD_SIZE_8BIT, &accelConfig2, 1, HAL_MAX_DELAY); // ACCEL FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
+  HAL_Delay(25);
+  if (ICM_ret == HAL_OK && ICM_ret2 == HAL_OK && ICM_ret3 == HAL_OK && ICM_ret4 == HAL_OK && ICM_ret5 == HAL_OK && ICM_ret6 == HAL_OK)
+  {
+	  return -1;
+  }
 //==================================================================================
 //	Start TIMER2 Step (function @ HAL_TIM_PeriodElapsedCallback)
 //==================================================================================
@@ -478,32 +569,85 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	int IMU_avgCounter = 0;
+	int IMU_postCounter = 0;
+	double IMU_sum = 0;
+	double curr_value = 0;
+	double prev_value = 0;
+
 	while (1)
 	{
 		//Only UART Channel 1 works for Discovery board... PB6/PB7
-		//HAL_UART_Transmit(&huart2, (uint8_t *) "Hello, world!", strlen("Hello, world!"), 10);
-		//HAL_UART_Transmit(&huart1, (uint8_t *) "Hello, world!", strlen("Hello, world!"), 10); // This is to the right of nucleo board
-		//HAL_Delay(1000);
+
+		//Collect IMU acceleration data
+		ICM_ret = HAL_I2C_Mem_Read(&hi2c1, ICM_Main_ADDR, ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT, data, sizeof(data)/sizeof(uint8_t), HAL_MAX_DELAY);
+		//HAL_Delay(25);
+		if ((data[0] & 0x80) != 0){
+			accX = -1;
+			data[0] = (data[0] ^ 0xFF) + 1;
+		}
+		if ((data[2] & 0x80) != 0){
+			accY = -1;
+			data[2] = (data[2] ^ 0xFF) + 1;
+		}
+		if ((data[4] & 0x80) != 0){
+			accZ = -1;
+			data[4] = (data[4] ^ 0xFF) + 1;
+		}
+		accXraw = (uint16_t) (data[0] << 8 | data[1]);
+		accYraw = (uint16_t) (data[2] << 8 | data[3]);
+		accZraw = (uint16_t) (data[4] << 8 | data[5]);
+		accX *= accXraw / accel_sens;
+		accY *= accYraw / accel_sens;
+		accZ *= accZraw / accel_sens;
+		mag = sqrt((pow(accX, 2) + pow(accY, 2) + pow(accZ, 2)));
+
+		accX = 1;
+		accY = 1;
+		accZ = 1;
+
+		IMU_sum = IMU_sum + mag;
+		if(IMU_avgCounter == 99) {
+			curr_value = IMU_sum / 100;
+			IMU_avgCounter = 0;
+			IMU_sum = 0;
+
+			if(IMU_postCounter != 0) {
+				prev_increasing = increasing;
+				prev_decreasing = decreasing;
+				if(curr_value > prev_value) {
+					increasing = 1;
+					decreasing = 0;
+				}
+				else {
+					increasing = 0;
+					decreasing = 1;
+				}
+				prev_value = curr_value;
+			}
+			else {
+				prev_value = curr_value;
+			}
+			if(prev_decreasing && increasing) {
+				//rotation phase 1
+				rotate++;
+			}
+			if(prev_increasing && decreasing) {
+				//rotation phase 2
+				rotate++;
+			}
+			if(rotate == 2) {
+				rotate = 0;
+				rotation_counter++;
+			}
+			IMU_postCounter++;
+		}
+		else {
+			IMU_avgCounter++;
+		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-//      ----------------------------------------------------------------------------------------
-//		POLLING FOR UART
-//		HAL_UART_Receive(&huart1, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
-//		HAL_UART_Transmit(&huart1, (uint8_t *)"\n\r", strlen("\n\r"), 100);
-//		HAL_UART_Transmit(&huart1, rxBuffer, sizeof(rxBuffer), 100);
-//		HAL_UART_Transmit(&huart1, (uint8_t *)"\n\r", strlen("\n\r"), 100);
-//		if(rxBuffer[0] == (uint8_t *)"A") {
-//			HAL_UART_Transmit(&huart1, (uint8_t *)"Success\n\r", strlen("Success\n\r"), 100);
-//		}
-//		else {
-//			HAL_UART_Transmit(&huart1, (uint8_t *)"Fail\n\r", strlen("Fail\n\r"), 100);
-//		}
-
-//		HAL_USART_Receive(&husart2, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
-//		HAL_USART_Transmit(&husart2, rxBuffer, sizeof(rxBuffer), HAL_MAX_DELAY);
-//      ----------------------------------------------------------------------------------------
 
 	}
   /* USER CODE END 3 */
@@ -696,7 +840,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5|GPIO_PIN_4, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PB4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PA5 PA4 */
   GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_4;
@@ -712,7 +866,9 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+
 	babysitter_SendData();
+	rotation_counter = 0;
 }
 
 /* USER CODE END 4 */
