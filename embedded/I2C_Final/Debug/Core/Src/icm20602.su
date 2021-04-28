@@ -1,0 +1,16 @@
+icm20602.c:99:1:_get_accel_sensitivity	24	static
+icm20602.c:123:1:_get_gyro_sensitivity	24	static
+icm20602.c:146:1:_read_data	48	static
+icm20602.c:170:1:icm20602_init	40	static
+icm20602.c:307:1:icm20602_read_accel	48	static
+icm20602.c:327:1:icm20602_read_gyro	48	static
+icm20602.c:347:1:icm20602_read_data	88	static
+icm20602.c:373:1:icm20602_read_accel_raw	56	static
+icm20602.c:390:1:icm20602_read_gyro_raw	48	static
+icm20602.c:407:1:icm20602_read_data_raw	56	static
+icm20602.c:429:1:icm20602_read_accel_fifo	48	static
+icm20602.c:449:1:icm20602_read_gyro_fifo	48	static
+icm20602.c:469:1:icm20602_read_fifo_data	88	static
+icm20602.c:495:1:icm20602_read_fifo_accel_raw	48	static
+icm20602.c:512:1:icm20602_read_fifo_gyro_raw	48	static
+icm20602.c:529:1:icm20602_read_fifo_data_raw	56	static

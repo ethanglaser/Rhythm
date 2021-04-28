@@ -1,4 +1,0 @@
-ICM20602.c:31:15:SPI1_SendByte	32	static
-ICM20602.c:41:9:ICM20602_Readbyte	32	static
-ICM20602.c:49:6:ICM20602_Writebyte	16	static
-ICM20602.c:55:5:ICM20602_Initialization	32	static
