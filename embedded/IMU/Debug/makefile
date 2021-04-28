@@ -54,8 +54,8 @@ all: main-build
 main-build: IMU.elf secondary-outputs
 
 # Tool invocations
-IMU.elf: $(OBJS) $(USER_OBJS) C:\Users\wdona\STM32CubeIDE\workspace_1.5.1\IMU\STM32L053R8TX_FLASH.ld
-	arm-none-eabi-gcc -o "IMU.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\wdona\STM32CubeIDE\workspace_1.5.1\IMU\STM32L053R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="IMU.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+IMU.elf: $(OBJS) $(USER_OBJS) C:\Users\wdona\STM32CubeIDE\workspace_1.5.1\Rhythm\embedded\IMU\STM32L053R8TX_FLASH.ld
+	arm-none-eabi-gcc -o "IMU.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"C:\Users\wdona\STM32CubeIDE\workspace_1.5.1\Rhythm\embedded\IMU\STM32L053R8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="IMU.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

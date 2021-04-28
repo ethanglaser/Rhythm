@@ -28,21 +28,23 @@ int main(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
   RCC->IOPENR |= RCC_IOPENR_IOPAEN;
   RCC->IOPENR |= RCC_IOPENR_IOPCEN;
+  RCC->IOPENR |= RCC_IOPENR_IOPBEN;
   RCC->APB1ENR |= RCC_APB1ENR_LPUART1EN;
 
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   //GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  GPIOA->ODR &= ~GPIO_ODR_OD5;
-  /*while(1){
-	  uint32_t odr = GPIOA->ODR;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  GPIOA->ODR &= ~GPIO_ODR_OD13;
 
-		 Set selected pins that were at low level, and reset ones that were high
-	  GPIOA->BSRR = ((odr & GPIO_ODR_OD5) << 16) | (~odr & GPIO_ODR_OD5);
+  while(1){
+	  uint32_t odr = GPIOB->ODR;
+
+//		 Set selected pins that were at low level, and reset ones that were high
+	  GPIOB->BSRR = ((odr & GPIO_ODR_OD13) << 16) | (~odr & GPIO_ODR_OD13);
 	  HAL_Delay(250);
-  }*/
+  }
   GPIO_InitStruct.Pin = GPIO_PIN_4;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);

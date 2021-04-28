@@ -886,6 +886,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit(SPI_HandleTypeDef *hspi, uint8_t *pData, uint
 //      *((__IO uint8_t *)&hspi->Instance->DR) = 245;
 //      SPI1->DR = 245;
       *((__IO uint8_t *)&hspi->Instance->DR) = (*hspi->pTxBuffPtr);
+//      SPI2->DR = (*hspi->pTxBuffPtr);
 //      unsigned char readVal = *((__IO uint8_t *)&hspi->Instance->DR);
 //      readVal += 1;
       hspi->pTxBuffPtr += sizeof(uint8_t);
@@ -1283,8 +1284,8 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive(SPI_HandleTypeDef *hspi, uint8_t *pTxD
   {
     if ((hspi->Init.Mode == SPI_MODE_SLAVE) || (initial_TxXferCount == 0x01U))
     {
-      *((__IO uint8_t *)&hspi->Instance->DR) = (*hspi->pTxBuffPtr);
-//      SPI2->DR = (*hspi->pTxBuffPtr);
+//      *((__IO uint8_t *)&hspi->Instance->DR) = (*hspi->pTxBuffPtr);
+      SPI2->DR = (*hspi->pTxBuffPtr);
       hspi->pTxBuffPtr += sizeof(uint8_t);
       hspi->TxXferCount--;
     }

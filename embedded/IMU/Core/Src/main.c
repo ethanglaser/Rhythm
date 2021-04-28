@@ -16,51 +16,17 @@
   *
   ******************************************************************************
   */
-/* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN PTD */
-
-/* USER CODE END PTD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
 /* Private variables ---------------------------------------------------------*/
-SPI_HandleTypeDef hspi1;
 
-USART_HandleTypeDef husart1;
-
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_SPI1_Init(void);
-static void MX_USART1_Init(void);
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
+//static void MX_GPIO_Init(void);
+//static void MX_SPI2_Init(void);
+//static void MX_USART1_Init(void);
 
 /**
   * @brief  The application entry point.
@@ -68,50 +34,14 @@ static void MX_USART1_Init(void);
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
-
-  /* USER CODE END 1 */
-
-  /* MCU Configuration--------------------------------------------------------*/
-
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-  /* USER CODE BEGIN Init */
-
-  /* USER CODE END Init */
-
-  /* Configure the system clock */
-  SystemClock_Config();
-
-  /* USER CODE BEGIN SysInit */
-
-  /* USER CODE END SysInit */
-
-  /* Initialize all configured peripherals */
-//  MX_GPIO_Init();
-//  MX_SPI1_Init();
-  MX_USART1_Init();
-  /* USER CODE BEGIN 2 */
-
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
   int device_ID;
   short accelData[3] = {0};
+
+  HAL_Init();
+  SystemClock_Config();
   device_ID = ICM20602_Initialization();
-  while(1) {
-	  ICM20602_Get3AxisAccRawData(accelData);
-  }
+  ICM20602_Get3AxisAccRawData(accelData);
   device_ID += 1;
-
-//  while (1)
-//  {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
-//  }
-  /* USER CODE END 3 */
 }
 
 /**
@@ -158,70 +88,44 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-
-  RCC->IOPENR |= RCC_IOPENR_IOPAEN | RCC_IOPENR_IOPBEN;
-//  RCC->AHBENR |= RCC_AHBENR_CRCEN;
-  RCC->APB2ENR |= RCC_APB2ENR_SPI1EN;
 }
 
 /**
-  * @brief SPI1 Initialization Function
+  * @brief SPI2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI1_Init(void)
+/*void MX_SPI2_Init(void)
 {
+  __HAL_RCC_SPI2_CLK_ENABLE();
+  RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
 
-  /* USER CODE BEGIN SPI1_Init 0 */
+  SPI_HandleTypeDef SPI_InitStruct = {0};
 
-  /* USER CODE END SPI1_Init 0 */
-
-  /* USER CODE BEGIN SPI1_Init 1 */
-
-  /* USER CODE END SPI1_Init 1 */
-  /* SPI1 parameter configuration*/
-//  SPI1->CR1 &= ~SPI_CR1_SPE;
-
-  hspi1.Instance = SPI1;
-  hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi1.Init.CRCPolynomial = 7;
-  if (HAL_SPI_Init(&hspi1) != HAL_OK)
+  SPI_InitStruct.Init.Direction = SPI_DIRECTION_2LINES;
+  SPI_InitStruct.Init.Mode = SPI_MODE_MASTER;
+  SPI_InitStruct.Init.DataSize = SPI_DATASIZE_8BIT;
+  SPI_InitStruct.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  SPI_InitStruct.Init.CLKPhase = SPI_PHASE_2EDGE;
+  SPI_InitStruct.Init.NSS = SPI_NSS_SOFT;
+  SPI_InitStruct.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; //ICM-20602 MAX SPI CLK is 10MHz. But DIV2(42MHz) is available.
+  SPI_InitStruct.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  SPI_InitStruct.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  SPI_InitStruct.Init.CRCPolynomial = 7;
+  SPI_InitStruct.State = HAL_SPI_STATE_READY;
+  if (HAL_SPI_Init(&SPI_InitStruct) != HAL_OK)
   {
     Error_Handler();
   }
-//  SPI1->CR1 &= ~SPI_CR1_DFF;
-//  SPI1->CR1 |= SPI_CR1_BIDIOE;
-//  SPI1->CR1 &= ~SPI_CR1_SSI;
-  /* USER CODE BEGIN SPI1_Init 2 */
-
-  /* USER CODE END SPI1_Init 2 */
-
-}
+}*/
 
 /**
   * @brief USART1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_USART1_Init(void)
+/*static void MX_USART1_Init(void)
 {
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
   husart1.Instance = USART1;
   husart1.Init.BaudRate = 115200;
   husart1.Init.WordLength = USART_WORDLENGTH_8B;
@@ -235,40 +139,27 @@ static void MX_USART1_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
+}*/
 
 /**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
   */
-static void MX_GPIO_Init(void)
+/*static void MX_GPIO_Init(void)
 {
-
-  /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+  RCC->IOPENR |= RCC_IOPENR_IOPBEN;
 
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  /*Configure GPIO pins : PA5 PA6 PA7 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF0_SPI1;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-//  GPIOA->MODER |= GPIO_MODER_MODE7_1 | GPIO_MODER_MODE6_1 | GPIO_MODER_MODE5_1;
-//  GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEED7 | GPIO_OSPEEDER_OSPEED6 | GPIO_OSPEEDER_OSPEED5;
-}
-
-/* USER CODE BEGIN 4 */
-
-/* USER CODE END 4 */
+  GPIO_InitStruct.Alternate = GPIO_AF0_SPI2;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+}*/
 
 /**
   * @brief  This function is executed in case of error occurrence.
