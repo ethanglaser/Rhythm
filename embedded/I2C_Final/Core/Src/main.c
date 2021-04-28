@@ -47,6 +47,10 @@ struct accelPacket
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
+
+/* USER CODE BEGIN PV */
+I2C_HandleTypeDef hi2c1;
 
 uint16_t tempRaw;
 uint8_t accXH;
@@ -55,6 +59,7 @@ uint8_t accZH;
 uint16_t accXraw;
 uint16_t accYraw;
 uint16_t accZraw;
+int delay = 25;
 
 int i = 0;
 float temp_sens;
@@ -65,11 +70,10 @@ float accY = 1;
 float accZ = 1;
 float mag;
 
-float temps[100] = {};
-struct accelPacket accels[100] = {};
-uint8_t data[8];
-
-/* USER CODE BEGIN PV */
+//float temps[100] = {};
+struct accelPacket accels[300] = {};
+double mags[100] = {};
+uint8_t data[6];
 
 /* USER CODE END PV */
 
@@ -77,6 +81,7 @@ uint8_t data[8];
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -114,7 +119,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_I2C1_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   uint16_t Main_ADDR = 0x68 << 1;
 
@@ -154,46 +159,46 @@ int main(void)
   while (1)
   {
 	  // read who_am_i
-	  ret = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, &deviceID, 1, HAL_MAX_DELAY);
-	  HAL_Delay(25);
+	  ret = HAL_I2C_Mem_Read(&hi2c2, Main_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, &deviceID, 1, HAL_MAX_DELAY);
+	  HAL_Delay(delay);
 
 	  // reset IMU
-	  ret2 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1, 1, HAL_MAX_DELAY);
-	  HAL_Delay(25);
+	  ret2 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1, 1, HAL_MAX_DELAY);
+	  HAL_Delay(delay);
 
-	  // enable temperature sensor
-	  ret11 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1_2, 1, HAL_MAX_DELAY);
-	  HAL_Delay(25);
+	  // enable temperature sensor and selects the clock source
+	  ret11 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1_2, 1, HAL_MAX_DELAY);
+	  HAL_Delay(delay);
 	  temp_sens =  326.8;
 
 	  // disable acc and gyro
-//	  ret3 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, PWR_MGMT_2, I2C_MEMADD_SIZE_8BIT, &pwr2, 1, HAL_MAX_DELAY);
+//	  ret3 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, PWR_MGMT_2, I2C_MEMADD_SIZE_8BIT, &pwr2, 1, HAL_MAX_DELAY);
 //	  HAL_Delay(25);
 
 	  // enable acc and gyro
-//	  ret4 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, PWR_MGMT_2, I2C_MEMADD_SIZE_8BIT, &pwr2_2, 1, HAL_MAX_DELAY);
+//	  ret4 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, PWR_MGMT_2, I2C_MEMADD_SIZE_8BIT, &pwr2_2, 1, HAL_MAX_DELAY);
 //	  HAL_Delay(25);
 
 	  // set sample rate to 1kHz and apply
-	  ret5 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, SMPLRT_DIV, I2C_MEMADD_SIZE_8BIT, &rtDiv, 1, HAL_MAX_DELAY);
-	  HAL_Delay(25);
+	  ret5 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, SMPLRT_DIV, I2C_MEMADD_SIZE_8BIT, &rtDiv, 1, HAL_MAX_DELAY);
+	  HAL_Delay(delay);
 
 	  // set DLPF_CFG to 5 for gyro configuration
-//	  ret6 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, CONFIG, I2C_MEMADD_SIZE_8BIT, &config, 1, HAL_MAX_DELAY);
+//	  ret6 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, CONFIG, I2C_MEMADD_SIZE_8BIT, &config, 1, HAL_MAX_DELAY);
 //	  HAL_Delay(25);
 
 	  // gryo full-scale range = 2000dps(0b11) -- sensitivity scale factor = 2,048 LSB/(dps)
-//	  ret7 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, GYRO_CONFIG, I2C_MEMADD_SIZE_8BIT, &gyroConfig, 1, HAL_MAX_DELAY);
+//	  ret7 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, GYRO_CONFIG, I2C_MEMADD_SIZE_8BIT, &gyroConfig, 1, HAL_MAX_DELAY);
 //	  HAL_Delay(25);
 //
 	  // accel full-scale range = 16g(0b11) -- sensitivity scale factor = 2,048 LSB/(dps)
-	  ret8 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, ACCEL_CONFIG, I2C_MEMADD_SIZE_8BIT, &accelConfig, 1, HAL_MAX_DELAY); // ACCEL full-scale range = 16g -- sensitivity scale facotr = 2,048 LSB/(dps)
-	  HAL_Delay(25);
+	  ret8 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, ACCEL_CONFIG, I2C_MEMADD_SIZE_8BIT, &accelConfig, 1, HAL_MAX_DELAY); // ACCEL full-scale range = 16g -- sensitivity scale facotr = 2,048 LSB/(dps)
+	  HAL_Delay(delay);
 	  accel_sens = 2048.0;
 
 	  // set A_DLPF_CFG to 3 for accel configuration
-	  ret9 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, ACCEL_CONFIG2, I2C_MEMADD_SIZE_8BIT, &accelConfig2, 1, HAL_MAX_DELAY); // ACCEL FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
-	  HAL_Delay(25);
+	  ret9 = HAL_I2C_Mem_Write(&hi2c2, Main_ADDR, ACCEL_CONFIG2, I2C_MEMADD_SIZE_8BIT, &accelConfig2, 1, HAL_MAX_DELAY); // ACCEL FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
+	  HAL_Delay(delay);
 //
 //	  ret10 = HAL_I2C_Mem_Write(&hi2c1, Main_ADDR, INT_ENABLE, I2C_MEMADD_SIZE_8BIT, &intEnable, 1, HAL_MAX_DELAY);
 //	  HAL_Delay(25);j
@@ -202,16 +207,11 @@ int main(void)
 		  if (ret == HAL_OK && ret2 == HAL_OK && ret3 == HAL_OK && ret4 == HAL_OK && ret5 == HAL_OK && ret6 == HAL_OK && ret7 == HAL_OK && ret8 == HAL_OK && ret9 == HAL_OK && ret10 == HAL_OK && ret11 == HAL_OK)
 		  {
 
-			while(i < 100) {
-				ret = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT, data, sizeof(data)/sizeof(uint8_t), HAL_MAX_DELAY);
-	//			ret = HAL_I2C_Mem_Read(&hi2c1, Main_ADDR, TEMP_OUT_H, I2C_MEMADD_SIZE_8BIT, data, 2, HAL_MAX_DELAY);
-				HAL_Delay(25);
+			while(i < (sizeof(accels) / sizeof(struct accelPacket))) {
+				ret = HAL_I2C_Mem_Read(&hi2c2, Main_ADDR, ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT, data, sizeof(data)/sizeof(uint8_t), HAL_MAX_DELAY);
 				if (ret != HAL_OK){
 					break;
 				}
-//				data[0] = (int8_t) data[0];
-//				data[2] = (int8_t) data[2];
-//				data[4] = (int8_t) data[4];
 				if ((data[0] & 0x80) != 0){
 					accX = -1;
 					data[0] = (data[0] ^ 0xFF) + 1;
@@ -231,15 +231,11 @@ int main(void)
 				accY *= accYraw / accel_sens;
 				accZ *= accZraw / accel_sens;
 				mag = sqrt((pow(accX, 2) + pow(accY, 2) + pow(accZ, 2)));
+//				mags[i] = mag;
 				accels[i].accX = accX;
 				accels[i].accY = accY;
 				accels[i].accZ = accZ;
 				accels[i].mag = mag;
-//				fprintf(fptr, "%f\n", mag);
-
-				tempRaw = ((uint16_t) data[6] << 8) | data[7];
-				temp = (tempRaw / temp_sens) + 25;
-				temps[i] = temp;
 
 				accX = 1;
 				accY = 1;
@@ -247,9 +243,6 @@ int main(void)
 				i++;
 			}
 			i = 0;
-	//		accel[0] = (data[0] << 8) | data[1];
-	//		accel[1] = (data[2] << 8) | data[3];
-	//		accel[2] = (data[4] << 8) | data[5];
 	  	  }
 	  }
 
@@ -309,48 +302,48 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
+  * @brief I2C2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2C1_Init(void)
+static void MX_I2C2_Init(void)
 {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
+  /* USER CODE BEGIN I2C2_Init 0 */
 
-  /* USER CODE END I2C1_Init 0 */
+  /* USER CODE END I2C2_Init 0 */
 
-  /* USER CODE BEGIN I2C1_Init 1 */
+  /* USER CODE BEGIN I2C2_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00303D5B;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.Timing = 0x00303D5B;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure Analogue filter
   */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure Digital filter
   */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN I2C1_Init 2 */
+  /* USER CODE BEGIN I2C2_Init 2 */
 
-  /* USER CODE END I2C1_Init 2 */
+  /* USER CODE END I2C2_Init 2 */
 
 }
 
