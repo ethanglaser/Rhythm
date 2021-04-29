@@ -23,12 +23,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <math.h>
-#include <stdio.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <math.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +48,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
 
 TIM_HandleTypeDef htim2;
 
@@ -82,9 +81,9 @@ uint8_t data[6];
 // RN4020 Global Variables
 //-------------------------------------------------------------------------------
 RN4020_State currState;
-uint8_t rxBuffer[3];
+uint8_t rxBuffer[1];
 uint8_t rxBuffer2[5];
-uint8_t compareAOK[3] = {'A','O','K'};
+uint8_t compareAOK[4] = {'A','O','K', '\r'};
 uint8_t compareCMD[3] = {'C', 'M', 'D'};
 uint8_t compareREB[3] = {'R', 'E', 'B'};
 uint8_t compareREBOOT[6] = {'R', 'E', 'B', 'O', 'O', 'T'};
@@ -117,8 +116,8 @@ int rotate = 0;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_I2C1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_I2C2_Init(void);
 /* USER CODE BEGIN PFP */
 
 //**********************************************************************
@@ -145,7 +144,11 @@ HAL_StatusTypeDef RN4020_setDeviceType(UART_HandleTypeDef *huart);
 
 HAL_StatusTypeDef RN4020_rebootDevice(UART_HandleTypeDef *huart);
 
+HAL_StatusTypeDef RN4020_setNameDevice(UART_HandleTypeDef *huart);
+
 HAL_StatusTypeDef RN4020_waitForReadyState();
+
+HAL_StatusTypeDef RN4020_waitForReadyState2();
 
 void sendData(UART_HandleTypeDef *huart, char _out[]);
 
@@ -196,14 +199,17 @@ void RN4020_checkState();
 int compStr(uint8_t* strcomp, uint8_t* expcomp)
 {
 	//int sizeStrComp = sizeof(strcomp)/sizeof(strcomp[0]);
-	int sizeExpComp = sizeof(expcomp)/sizeof(expcomp[0]);
-	for(int i = 0; i < sizeExpComp; i++)
-	{
-		if (strcomp[i] != expcomp[i])
-		{
-			return FALSE;
-		}
+	//int sizeExpComp = sizeof(strcomp)/sizeof(expcomp[0]);
+	if(strcomp[0] != expcomp[0]) {
+		return FALSE;
 	}
+//	for(int i = 0; i < sizeExpComp; i++)
+//	{
+//		if (strcomp[i] != expcomp[i])
+//		{
+//			return FALSE;
+//		}
+//	}
 	return TRUE;
 }
 
@@ -261,6 +267,10 @@ int RN4020_resetDefaultStep(UART_HandleTypeDef *huart) {
 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 		completeFlag = FALSE;
 	}
+	if (RN4020_setNameDevice(huart) != HAL_OK) {
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+		completeFlag = FALSE;
+	}
 
 	return completeFlag;
 }
@@ -284,7 +294,7 @@ HAL_StatusTypeDef RN4020_setBaudRate115200(UART_HandleTypeDef *huart) {
 
 HAL_StatusTypeDef RN4020_setService(UART_HandleTypeDef *huart) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
-	RN4020_sendData(huart, "SS,C0000000\r\n");
+	RN4020_sendData(huart, "SS,C2000000\r\n");
 	return RN4020_waitForReadyState();
 	}
 HAL_StatusTypeDef RN4020_clearPrivateSettings(UART_HandleTypeDef *huart) {
@@ -313,22 +323,29 @@ HAL_StatusTypeDef RN4020_rebootDevice(UART_HandleTypeDef *huart) {
 	return RN4020_waitForReadyState();
 	}
 
+HAL_StatusTypeDef RN4020_setNameDevice(UART_HandleTypeDef *huart) {
+	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
+	RN4020_sendData(huart, "SN,T17_NewlyWED");
+	RN4020_sendData(huart, "\r\n");
+	return RN4020_waitForReadyState();
+}
+
 HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, const char* batteryLevel) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
 	RN4020_sendData(huart, "SUW,2A19,");
 	RN4020_sendData(huart, batteryLevel);
 	RN4020_sendData(huart, "\r\n");
-	//return RN4020_waitForReadyState();
+//	return RN4020_waitForReadyState2();
 	return HAL_OK;
 	}
 
-HAL_StatusTypeDef RN4020_sendBatteryLife_Cadence(UART_HandleTypeDef *huart, const char* batteryLevel, const char* cadence) {
+HAL_StatusTypeDef RN4020_sendCadence(UART_HandleTypeDef *huart, const char* cadence) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
-	RN4020_sendData(huart, "SUW,2A19,");
-	RN4020_sendData(huart, batteryLevel);
-	RN4020_sendData(huart, cadence);
+	RN4020_sendData(huart, "SUW,2A54,");
+//	RN4020_sendData(huart, cadence);
+	RN4020_sendData(huart, "75");
 	RN4020_sendData(huart, "\r\n");
-	//return RN4020_waitForReadyState();
+//	return RN4020_waitForReadyState2();
 	return HAL_OK;
 	}
 
@@ -344,7 +361,29 @@ HAL_StatusTypeDef RN4020_waitForReadyState() {
 			resetRxBuffer(rxBuffer);
 			return HAL_OK;
 		}
-		if ((HAL_GetTick() - startTime) > RN4020_TIMEOUT) {
+		//if ((HAL_GetTick() - startTime) > RN4020_TIMEOUT) {
+		if ((HAL_GetTick() - startTime) > 3000) {
+			resetRxBuffer(rxBuffer);
+			return HAL_TIMEOUT;
+		}
+		RN4020_checkState();
+	}
+
+
+}
+
+HAL_StatusTypeDef RN4020_waitForReadyState2() {
+	if(currState == RN4020_STATE_READY) {
+		return HAL_OK;
+	}
+
+	uint32_t startTime = HAL_GetTick();
+	while (1) {
+		if(currState == RN4020_STATE_READY) {
+			resetRxBuffer(rxBuffer);
+			return HAL_OK;
+		}
+		if ((HAL_GetTick() - startTime) > 500) {
 			resetRxBuffer(rxBuffer);
 			return HAL_TIMEOUT;
 		}
@@ -404,27 +443,55 @@ void babysitter_SendData() {
 	uint8_t BABY_data[2];
 	uint8_t BABY_data2[2];
 	int bigbattery = 0;
-
-	babysitter_ret = HAL_I2C_Mem_Read(&hi2c1, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
-	babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c1, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
+	char cadence[4] = {0,0,0,0};
+	if (rotation_counter < 10) {
+		sprintf(cadence, "0%d", rotation_counter);
+	}
+	else {
+		sprintf(cadence, "%02d", rotation_counter);
+	}
+	RN4020_sendCadence(&huart1, cadence);
+	babysitter_ret = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
+	babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
 
 	if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
-		HAL_UART_Transmit(&huart1, (uint8_t *) " RECEIVE ERROR", strlen(" RECEIVE ERROR"), 100);
+		babysitter_ret = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
+		babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
+		if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
+			//HAL_UART_Transmit(&huart1, (uint8_t *) " RECEIVE ERROR\r\n", strlen(" RECEIVE ERROR\r\n"), 100);
+		}
+		else {
+			char integer[4] = {0,0,0,0}; //create an empty string to store number
+			uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
+			uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
+			bigbattery = 100000 * finalval / finalval2;
+
+			if ((bigbattery / 1000) < 10) {
+				sprintf(integer, "0%d", bigbattery / 1000);
+			}
+			else {
+				sprintf(integer, "%02d", bigbattery / 1000);
+			}
+
+			RN4020_sendBatteryLife(&huart1, integer);
+		}
 	}
 	else {
 		char integer[4] = {0,0,0,0}; //create an empty string to store number
-		char decimal[4] = {0,0,0,0}; //create an empty string to store number
-		char cadence[6] = {0,0,0,0,0,0};
+//		char decimal[4] = {0,0,0,0}; //create an empty string to store number
 		uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
 		uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
 		bigbattery = 100000 * finalval / finalval2;
 
-		sprintf(cadence, "%d", rotation_counter * 2);
-		sprintf(integer, "%d", bigbattery / 1000);
-		sprintf(decimal, "%03d", bigbattery % 1000);
+		if ((bigbattery / 1000) < 10) {
+			sprintf(integer, "0%d", bigbattery / 1000);
+		}
+		else {
+			sprintf(integer, "%02d", bigbattery / 1000);
+		}
+//		sprintf(decimal, "%03d", bigbattery % 1000);
 
-//		RN4020_sendBatteryLife(&huart1, &integer);
-		RN4020_sendBatteryLife_Cadence(&huart1, integer, cadence);
+		RN4020_sendBatteryLife(&huart1, integer);
 
 	  }
 //	  if (ret == HAL_OK) {
@@ -508,9 +575,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
-  MX_I2C1_Init();
   MX_TIM2_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
+  RCC -> IOPENR |= RCC_IOPENR_IOPBEN | RCC_IOPENR_IOPAEN;
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // Set PA5 pin off
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_4, 1);
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, 1);
@@ -530,31 +598,31 @@ int main(void)
 //	ICM-20602 Configuration Step
 //==================================================================================
   // read who_am_i
-  ICM_ret = HAL_I2C_Mem_Read(&hi2c1, ICM_Main_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, &deviceID, 1, HAL_MAX_DELAY);
+  ICM_ret = HAL_I2C_Mem_Read(&hi2c2, ICM_Main_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, &deviceID, 1, HAL_MAX_DELAY);
   HAL_Delay(25);
 
   // reset IMU
-  ICM_ret2 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1, 1, HAL_MAX_DELAY);
+  ICM_ret2 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1, 1, HAL_MAX_DELAY);
   HAL_Delay(25);
 
   // enable temperature sensor and SELECTS the clock source
-  ICM_ret3 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1_2, 1, HAL_MAX_DELAY);
+  ICM_ret3 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1_2, 1, HAL_MAX_DELAY);
   HAL_Delay(25);
   temp_sens = 326.8;
 
   // set sample rate to 1kHz and apply
-  ICM_ret4 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, SMPLRT_DIV, I2C_MEMADD_SIZE_8BIT, &rtDiv, 1, HAL_MAX_DELAY);
+  ICM_ret4 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, SMPLRT_DIV, I2C_MEMADD_SIZE_8BIT, &rtDiv, 1, HAL_MAX_DELAY);
   HAL_Delay(25);
 
   // accel full-scale range = 16g(0b11) -- sensitivity scale factor = 2,048 LSB/(dps)
-  ICM_ret5 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, ACCEL_CONFIG, I2C_MEMADD_SIZE_8BIT, &accelConfig, 1, HAL_MAX_DELAY); // ACCEL full-scale range = 16g -- sensitivity scale facotr = 2,048 LSB/(dps)
+  ICM_ret5 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, ACCEL_CONFIG, I2C_MEMADD_SIZE_8BIT, &accelConfig, 1, HAL_MAX_DELAY); // ACCEL full-scale range = 16g -- sensitivity scale facotr = 2,048 LSB/(dps)
   HAL_Delay(25);
   accel_sens = 2048.0;
 
   // set A_DLPF_CFG to 3 for accel configuration
-  ICM_ret6 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, ACCEL_CONFIG2, I2C_MEMADD_SIZE_8BIT, &accelConfig2, 1, HAL_MAX_DELAY); // ACCEL FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
+  ICM_ret6 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, ACCEL_CONFIG2, I2C_MEMADD_SIZE_8BIT, &accelConfig2, 1, HAL_MAX_DELAY); // ACCEL FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
   HAL_Delay(25);
-  if (ICM_ret == HAL_OK && ICM_ret2 == HAL_OK && ICM_ret3 == HAL_OK && ICM_ret4 == HAL_OK && ICM_ret5 == HAL_OK && ICM_ret6 == HAL_OK)
+  if (ICM_ret == HAL_OK && ICM_ret2 == HAL_OK && ICM_ret3 != HAL_OK && ICM_ret4 != HAL_OK && ICM_ret5 != HAL_OK && ICM_ret6 != HAL_OK)
   {
 	  return -1;
   }
@@ -580,7 +648,7 @@ int main(void)
 		//Only UART Channel 1 works for Discovery board... PB6/PB7
 
 		//Collect IMU acceleration data
-		ICM_ret = HAL_I2C_Mem_Read(&hi2c1, ICM_Main_ADDR, ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT, data, sizeof(data)/sizeof(uint8_t), HAL_MAX_DELAY);
+		ICM_ret = HAL_I2C_Mem_Read(&hi2c2, ICM_Main_ADDR, ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT, data, sizeof(data)/sizeof(uint8_t), HAL_MAX_DELAY);
 		//HAL_Delay(25);
 		if ((data[0] & 0x80) != 0){
 			accX = -1;
@@ -690,9 +758,8 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2C1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
-  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -700,48 +767,48 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief I2C1 Initialization Function
+  * @brief I2C2 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_I2C1_Init(void)
+static void MX_I2C2_Init(void)
 {
 
-  /* USER CODE BEGIN I2C1_Init 0 */
+  /* USER CODE BEGIN I2C2_Init 0 */
 
-  /* USER CODE END I2C1_Init 0 */
+  /* USER CODE END I2C2_Init 0 */
 
-  /* USER CODE BEGIN I2C1_Init 1 */
+  /* USER CODE BEGIN I2C2_Init 1 */
 
-  /* USER CODE END I2C1_Init 1 */
-  hi2c1.Instance = I2C1;
-  hi2c1.Init.Timing = 0x00000509;
-  hi2c1.Init.OwnAddress1 = 0;
-  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-  hi2c1.Init.OwnAddress2 = 0;
-  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  /* USER CODE END I2C2_Init 1 */
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.Timing = 0x00000509;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure Analogue filter
   */
-  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
   /** Configure Digital filter
   */
-  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN I2C1_Init 2 */
+  /* USER CODE BEGIN I2C2_Init 2 */
 
-  /* USER CODE END I2C1_Init 2 */
+  /* USER CODE END I2C2_Init 2 */
 
 }
 
@@ -764,7 +831,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 10000-1;
+  htim2.Init.Prescaler = 40000-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 1500-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
