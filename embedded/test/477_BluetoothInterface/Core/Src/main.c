@@ -48,6 +48,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
 I2C_HandleTypeDef hi2c2;
 
 TIM_HandleTypeDef htim2;
@@ -87,6 +88,7 @@ uint8_t compareAOK[4] = {'A','O','K', '\r'};
 uint8_t compareCMD[3] = {'C', 'M', 'D'};
 uint8_t compareREB[3] = {'R', 'E', 'B'};
 uint8_t compareREBOOT[6] = {'R', 'E', 'B', 'O', 'O', 'T'};
+int HELPcounter = 0;
 //-------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------
@@ -118,6 +120,7 @@ static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_I2C2_Init(void);
+static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
 //**********************************************************************
@@ -294,7 +297,7 @@ HAL_StatusTypeDef RN4020_setBaudRate115200(UART_HandleTypeDef *huart) {
 
 HAL_StatusTypeDef RN4020_setService(UART_HandleTypeDef *huart) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
-	RN4020_sendData(huart, "SS,C2000000\r\n");
+	RN4020_sendData(huart, "SS,C0040000\r\n");
 	return RN4020_waitForReadyState();
 	}
 HAL_StatusTypeDef RN4020_clearPrivateSettings(UART_HandleTypeDef *huart) {
@@ -330,7 +333,7 @@ HAL_StatusTypeDef RN4020_setNameDevice(UART_HandleTypeDef *huart) {
 	return RN4020_waitForReadyState();
 }
 
-HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, const char* batteryLevel) {
+HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, char* batteryLevel) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
 	RN4020_sendData(huart, "SUW,2A19,");
 	RN4020_sendData(huart, batteryLevel);
@@ -339,11 +342,11 @@ HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, const char* 
 	return HAL_OK;
 	}
 
-HAL_StatusTypeDef RN4020_sendCadence(UART_HandleTypeDef *huart, const char* cadence) {
+HAL_StatusTypeDef RN4020_sendCadence(UART_HandleTypeDef *huart, char* cadence) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
-	RN4020_sendData(huart, "SUW,2A54,");
-//	RN4020_sendData(huart, cadence);
-	RN4020_sendData(huart, "75");
+	RN4020_sendData(huart, "SUW,2A07,");
+	RN4020_sendData(huart, cadence);
+//	RN4020_sendData(huart, "75");
 	RN4020_sendData(huart, "\r\n");
 //	return RN4020_waitForReadyState2();
 	return HAL_OK;
@@ -444,6 +447,8 @@ void babysitter_SendData() {
 	uint8_t BABY_data2[2];
 	int bigbattery = 0;
 	char cadence[4] = {0,0,0,0};
+	char integer[4] = {0,0,0,0}; //create an empty string to store number
+	char HELPinteger[4] = {0,0,0,0};
 	if (rotation_counter < 10) {
 		sprintf(cadence, "0%d", rotation_counter);
 	}
@@ -461,19 +466,21 @@ void babysitter_SendData() {
 			//HAL_UART_Transmit(&huart1, (uint8_t *) " RECEIVE ERROR\r\n", strlen(" RECEIVE ERROR\r\n"), 100);
 		}
 		else {
-			char integer[4] = {0,0,0,0}; //create an empty string to store number
 			uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
 			uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
 			bigbattery = 100000 * finalval / finalval2;
 
 			if ((bigbattery / 1000) < 10) {
-				sprintf(integer, "0%d", bigbattery / 1000);
+				//sprintf(integer, "0%d", bigbattery / 1000);
+				sprintf(HELPinteger, "0%d", HELPcounter);
 			}
 			else {
-				sprintf(integer, "%02d", bigbattery / 1000);
+				//sprintf(integer, "%02d", bigbattery / 1000);
+				sprintf(HELPinteger, "%02d", HELPcounter);
 			}
 
-			RN4020_sendBatteryLife(&huart1, integer);
+//			RN4020_sendBatteryLife(&huart1, integer);
+			RN4020_sendBatteryLife(&huart1, HELPinteger);
 		}
 	}
 	else {
@@ -484,14 +491,16 @@ void babysitter_SendData() {
 		bigbattery = 100000 * finalval / finalval2;
 
 		if ((bigbattery / 1000) < 10) {
-			sprintf(integer, "0%d", bigbattery / 1000);
+			//sprintf(integer, "0%d", bigbattery / 1000);
+			sprintf(HELPinteger, "0%d", HELPcounter);
 		}
 		else {
-			sprintf(integer, "%02d", bigbattery / 1000);
+			//sprintf(integer, "%02d", bigbattery / 1000);
+			sprintf(HELPinteger, "%02d", HELPcounter);
 		}
 //		sprintf(decimal, "%03d", bigbattery % 1000);
-
-		RN4020_sendBatteryLife(&huart1, integer);
+//		RN4020_sendBatteryLife(&huart1, integer);
+		RN4020_sendBatteryLife(&huart1, HELPinteger);
 
 	  }
 //	  if (ret == HAL_OK) {
@@ -577,6 +586,7 @@ int main(void)
   MX_USART1_UART_Init();
   MX_TIM2_Init();
   MX_I2C2_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   RCC -> IOPENR |= RCC_IOPENR_IOPBEN | RCC_IOPENR_IOPAEN;
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET); // Set PA5 pin off
@@ -587,44 +597,51 @@ int main(void)
 //==================================================================================
 //	Bluetooth LE Configuration Step
 //==================================================================================
-  HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
-  RN4020_config_ret = RN4020_resetDefaultStep(&huart1);
-  if (RN4020_config_ret == TRUE) {
-	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-  }
-    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+//  HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
+//  RN4020_config_ret = RN4020_resetDefaultStep(&huart1);
+//  if (RN4020_config_ret == TRUE) {
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+//  }
+//    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 //==================================================================================
 //==================================================================================
 //	ICM-20602 Configuration Step
 //==================================================================================
   // read who_am_i
-  ICM_ret = HAL_I2C_Mem_Read(&hi2c2, ICM_Main_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, &deviceID, 1, HAL_MAX_DELAY);
+  ICM_ret = HAL_I2C_Mem_Read(&hi2c1, ICM_Main_ADDR, WHO_AM_I, I2C_MEMADD_SIZE_8BIT, &deviceID, 1, 0xFF);
   HAL_Delay(25);
 
   // reset IMU
-  ICM_ret2 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1, 1, HAL_MAX_DELAY);
+  ICM_ret2 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1, 1, 0xFF);
   HAL_Delay(25);
 
   // enable temperature sensor and SELECTS the clock source
-  ICM_ret3 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1_2, 1, HAL_MAX_DELAY);
+  ICM_ret3 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, PWR_MGMT_1, I2C_MEMADD_SIZE_8BIT, &pwr1_2, 1, 0xFF);
   HAL_Delay(25);
   temp_sens = 326.8;
 
   // set sample rate to 1kHz and apply
-  ICM_ret4 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, SMPLRT_DIV, I2C_MEMADD_SIZE_8BIT, &rtDiv, 1, HAL_MAX_DELAY);
+  ICM_ret4 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, SMPLRT_DIV, I2C_MEMADD_SIZE_8BIT, &rtDiv, 1, 0xFF);
   HAL_Delay(25);
 
   // accel full-scale range = 16g(0b11) -- sensitivity scale factor = 2,048 LSB/(dps)
-  ICM_ret5 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, ACCEL_CONFIG, I2C_MEMADD_SIZE_8BIT, &accelConfig, 1, HAL_MAX_DELAY); // ACCEL full-scale range = 16g -- sensitivity scale facotr = 2,048 LSB/(dps)
+  ICM_ret5 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, ACCEL_CONFIG, I2C_MEMADD_SIZE_8BIT, &accelConfig, 1, 0xFF); // ACCEL full-scale range = 16g -- sensitivity scale facotr = 2,048 LSB/(dps)
   HAL_Delay(25);
   accel_sens = 2048.0;
 
   // set A_DLPF_CFG to 3 for accel configuration
-  ICM_ret6 = HAL_I2C_Mem_Write(&hi2c2, ICM_Main_ADDR, ACCEL_CONFIG2, I2C_MEMADD_SIZE_8BIT, &accelConfig2, 1, HAL_MAX_DELAY); // ACCEL FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
+  ICM_ret6 = HAL_I2C_Mem_Write(&hi2c1, ICM_Main_ADDR, ACCEL_CONFIG2, I2C_MEMADD_SIZE_8BIT, &accelConfig2, 1, 0xFF); // ACCEL FCHOICE 1kHz(bit3-0), DLPF fc 44.8Hz(bit2:0-011)
   HAL_Delay(25);
-  if (ICM_ret == HAL_OK && ICM_ret2 == HAL_OK && ICM_ret3 != HAL_OK && ICM_ret4 != HAL_OK && ICM_ret5 != HAL_OK && ICM_ret6 != HAL_OK)
+  if (ICM_ret != HAL_OK || ICM_ret2 != HAL_OK || ICM_ret3 != HAL_OK || ICM_ret4 != HAL_OK || ICM_ret5 != HAL_OK || ICM_ret6 != HAL_OK || deviceID != 0x12)
   {
-	  return -1;
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14, 1);
+	  HAL_Delay(500);
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12 | GPIO_PIN_13 | GPIO_PIN_14, 0);
+  }
+  else {
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, 1);
+	  HAL_Delay(500);
+	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, 0);
   }
 //==================================================================================
 //	Start TIMER2 Step (function @ HAL_TIM_PeriodElapsedCallback)
@@ -645,11 +662,8 @@ int main(void)
 
 	while (1)
 	{
-		//Only UART Channel 1 works for Discovery board... PB6/PB7
-
 		//Collect IMU acceleration data
-		ICM_ret = HAL_I2C_Mem_Read(&hi2c2, ICM_Main_ADDR, ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT, data, sizeof(data)/sizeof(uint8_t), HAL_MAX_DELAY);
-		//HAL_Delay(25);
+		ICM_ret = HAL_I2C_Mem_Read(&hi2c1, ICM_Main_ADDR, ACCEL_XOUT_H, I2C_MEMADD_SIZE_8BIT, data, sizeof(data)/sizeof(uint8_t), HAL_MAX_DELAY);
 		if ((data[0] & 0x80) != 0){
 			accX = -1;
 			data[0] = (data[0] ^ 0xFF) + 1;
@@ -669,6 +683,24 @@ int main(void)
 		accY *= accYraw / accel_sens;
 		accZ *= accZraw / accel_sens;
 		mag = sqrt((pow(accX, 2) + pow(accY, 2) + pow(accZ, 2)));
+		if(((accX > .9) && (accX < 1.1)) || ((accX < -.9) && (accX > -1.1))){
+		    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, 1);
+		}
+		else{
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, 0);
+		}
+		if(((accY > .9) && (accY < 1.1)) || ((accY < -.9) && (accY > -1.1))){
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 1);
+		}
+		else{
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 0);
+		}
+		if(((accZ > .9) && (accZ < 1.1)) || ((accZ < -.9) && (accZ > -1.1))){
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, 1);
+		}
+		else{
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, 0);
+		}
 
 		accX = 1;
 		accY = 1;
@@ -713,6 +745,7 @@ int main(void)
 		else {
 			IMU_avgCounter++;
 		}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -758,12 +791,59 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1;
+  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART1|RCC_PERIPHCLK_I2C1;
   PeriphClkInit.Usart1ClockSelection = RCC_USART1CLKSOURCE_PCLK2;
+  PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.Timing = 0x00000509;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c1, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c1, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
@@ -907,13 +987,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_4|GPIO_PIN_14|GPIO_PIN_13|GPIO_PIN_12, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5|GPIO_PIN_4, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PB4 */
-  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  /*Configure GPIO pins : PB4 PB14 PB13 PB12 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_14|GPIO_PIN_13|GPIO_PIN_12;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -932,9 +1012,13 @@ static void MX_GPIO_Init(void)
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_4);
+
+	while ((I2C1->ISR & I2C_FLAG_BUSY) != 0) {
+
+	}
 
 	babysitter_SendData();
+	HELPcounter++;
 	rotation_counter = 0;
 }
 

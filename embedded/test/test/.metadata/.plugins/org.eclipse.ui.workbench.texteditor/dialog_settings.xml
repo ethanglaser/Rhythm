@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
-		<item key="selection" value="75"/>
+		<item key="selection" value="HAL_TIM_PeriodElapsedCallback"/>
 		<item key="wrap" value="true"/>
 		<item key="casesensitive" value="false"/>
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
 		<list key="findhistory">
+			<item value="HAL_TIM_PeriodElapsedCallback"/>
+			<item value="TIm2"/>
+			<item value="babysitter_SendData"/>
+			<item value="TIM2"/>
+			<item value="tim2"/>
+			<item value="RN4020_resetDefaultStep"/>
+			<item value="C004"/>
+			<item value="2a"/>
+			<item value="2a19"/>
+			<item value="C0"/>
+			<item value="S219"/>
+			<item value="C200"/>
+			<item value="C2"/>
+			<item value="840"/>
 			<item value="75"/>
-			<item value="2A54"/>
-			<item value="mag"/>
-			<item value="IMU_sum"/>
-			<item value="87"/>
-			<item value="7587"/>
-			<item value="receive error"/>
-			<item value="resetRxBuffer"/>
-			<item value="compStr"/>
-			<item value="compareCMD"/>
-			<item value="compareREB"/>
-			<item value="rxBuffer"/>
-			<item value="HAL_UART_Receive_IT"/>
-			<item value="IT"/>
-			<item value="interrupt"/>
 		</list>
 		<list key="replacehistory">
 			<item value=""/>
