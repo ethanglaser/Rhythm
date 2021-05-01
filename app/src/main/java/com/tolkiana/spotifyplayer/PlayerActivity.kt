@@ -13,6 +13,8 @@ import org.jetbrains.anko.activityManager
 import java.util.*
 import kotlin.math.abs
 
+var test = 39
+var alreadyPlayed: MutableList<Song> = mutableListOf<Song>()
 
 class PlayerActivity : AppCompatActivity() {
 
@@ -54,9 +56,10 @@ class PlayerActivity : AppCompatActivity() {
     fun rhythm(dict: Map<String, Song>) {
         Log.d("PlayerBatter", batteryLevelString)
         var waitTime = firstSong(dict)
+        var nextSong = ""
         CoroutineScope(Dispatchers.IO).launch {
             delay(5000)
-            setText(actualBattery, batteryLevelString)
+            setText(actualBattery, "$test%")
             withContext(Dispatchers.Main) {
                 setImage()
             }
@@ -70,14 +73,20 @@ class PlayerActivity : AppCompatActivity() {
                     if (status){
                         status = false
                         GlobalScope.launch {
-                        delay(waitTime.toLong() - 30000)
-                        waitTime = queueNew(dict)
-                        GlobalScope.launch {
-                            status = true
-                            delay(32000)
-                            setImage()
+                            delay(waitTime.toLong() - 30000)
+                            //MainActivity().getBattery(publicGatt)
+                            nextSong = queueNew(dict)
+                            waitTime = dict[nextSong]!!.duration
+                            GlobalScope.launch {
+                                delay(26000)
+                                SpotifyService.play(nextSong)
+                                GlobalScope.launch {
+                                    status = true
+                                    delay(6000)
+                                    setImage()
+                                }
+                            }
                         }
-                    }
                     }
                 }
             }
@@ -90,29 +99,41 @@ class PlayerActivity : AppCompatActivity() {
         Log.d("a", first.toString())
         SpotifyService.play(first.key)
         setText(actualTempo, first.value.tempo.toString())
+        //setText(actualTempo, test.toString())
         return first.value.duration
     }
 
-    fun queueNew(dict: Map<String, Song>): Int {
+    fun queueNew(dict: Map<String, Song>): String {
         var waitTime = 0
         val random = Random()
-        var tempo = random.nextGaussian() * 35 + 150
+        var tempo = 0.0
+        if (testString == 0.0) {
+            tempo = random.nextGaussian() * 35 + 150
+        }
+        else {
+            tempo = testString
+        }
         Log.d("TEMPO", tempo.toString())
         var closestsong = ""
         var closestvalue = 1000.0
         var songtempo = 0.0
+        var actual = Song("","",0,"",0.0)
         for ((k, v) in dict) {
             if (abs(tempo - v.tempo) < closestvalue) {
                 songtempo = v.tempo
                 closestvalue = abs(tempo - v.tempo)
                 closestsong = k
                 waitTime = v.duration
+                actual =  v
             }
         }
-        setText(actualWorkout, tempo.toString())
+        alreadyPlayed.add(actual)
+        setText(actualBattery, "$test%")
+        test -= 1
+        setText(actualWorkout, "%.3f".format(tempo))
         setText(actualTempo, songtempo.toString())
         Log.d("SONG", dict[closestsong].toString())
-        SpotifyService.queue(closestsong)
-        return waitTime
+        //SpotifyService.queue(closestsong)
+        return closestsong
     }
 }
