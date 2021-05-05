@@ -153,6 +153,8 @@ HAL_StatusTypeDef RN4020_waitForReadyState();
 
 HAL_StatusTypeDef RN4020_waitForReadyState2();
 
+HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, char* batteryLevel);
+
 void sendData(UART_HandleTypeDef *huart, char _out[]);
 
 void RN4020_sendData(UART_HandleTypeDef *huart, const char* line);
@@ -164,6 +166,10 @@ void resetRxBuffer(uint8_t *rxBuffer);
 void RN4020_setState(RN4020_State *state, RN4020_State newState);
 
 void RN4020_checkState();
+
+void getBatteryLife();
+
+void babysitter_SendData();
 
 //**********************************************************************
 //  RN4020 Function Declarations (END)
@@ -198,6 +204,43 @@ void RN4020_checkState();
 //**********************************************************************
 //  HELPER RN4020 Functions (START)
 //**********************************************************************
+//ACTUALLY for battery life
+void getBatteryLife() {
+	HAL_StatusTypeDef babysitter_ret;
+	HAL_StatusTypeDef babysitter_ret2;
+	uint8_t BABY_data[2];
+	uint8_t BABY_data2[2];
+	int bigbattery = 0;
+//	char cadence[4] = {0,0,0,0};
+	char integer[4] = {0,0,0,0}; //create an empty string to store number
+//	char HELPinteger[4] = {0,0,0,0};
+	babysitter_ret = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
+	babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
+
+	if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
+
+	}
+	else {
+		char integer[4] = {0,0,0,0}; //create an empty string to store number
+//		char decimal[4] = {0,0,0,0}; //create an empty string to store number
+		uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
+		uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
+		bigbattery = 100000 * finalval / finalval2;
+
+		if ((bigbattery / 1000) < 10) {
+			sprintf(integer, "0%d", bigbattery / 1000);
+//			sprintf(HELPinteger, "0%d", HELPcounter);
+		}
+		else {
+			sprintf(integer, "%02d", bigbattery / 1000);
+//			sprintf(HELPinteger, "%02d", HELPcounter);
+		}
+//		sprintf(decimal, "%03d", bigbattery % 1000);
+		RN4020_sendBatteryLife(&huart1, integer);
+//		RN4020_sendBatteryLife(&huart1, HELPinteger);
+
+	  }
+}
 
 int compStr(uint8_t* strcomp, uint8_t* expcomp)
 {
@@ -344,7 +387,8 @@ HAL_StatusTypeDef RN4020_sendBatteryLife(UART_HandleTypeDef *huart, char* batter
 
 HAL_StatusTypeDef RN4020_sendCadence(UART_HandleTypeDef *huart, char* cadence) {
 	RN4020_setState(&currState, RN4020_STATE_WAITING_FOR_AOK);
-	RN4020_sendData(huart, "SUW,2A07,");
+//	RN4020_sendData(huart, "SUW,2A07,");
+	RN4020_sendData(huart, "SUW,2A19,");
 	RN4020_sendData(huart, cadence);
 //	RN4020_sendData(huart, "75");
 	RN4020_sendData(huart, "\r\n");
@@ -438,17 +482,17 @@ void RN4020_sendData(UART_HandleTypeDef *huart, const char* line) {
 //  RN4020 Functions (END)
 //**********************************************************************
 
-
+//ACTUALLY, this is for the cadence XD
 void babysitter_SendData() {
 	//Variables for babysitter interrupt
-	HAL_StatusTypeDef babysitter_ret;
-	HAL_StatusTypeDef babysitter_ret2;
-	uint8_t BABY_data[2];
-	uint8_t BABY_data2[2];
-	int bigbattery = 0;
+//	HAL_StatusTypeDef babysitter_ret;
+//	HAL_StatusTypeDef babysitter_ret2;
+//	uint8_t BABY_data[2];
+//	uint8_t BABY_data2[2];
+//	int bigbattery = 0;
+//	char integer[4] = {0,0,0,0}; //create an empty string to store number
+//	char HELPinteger[4] = {0,0,0,0};
 	char cadence[4] = {0,0,0,0};
-	char integer[4] = {0,0,0,0}; //create an empty string to store number
-	char HELPinteger[4] = {0,0,0,0};
 	if (rotation_counter < 10) {
 		sprintf(cadence, "0%d", rotation_counter);
 	}
@@ -456,53 +500,53 @@ void babysitter_SendData() {
 		sprintf(cadence, "%02d", rotation_counter);
 	}
 	RN4020_sendCadence(&huart1, cadence);
-	babysitter_ret = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
-	babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
-
-	if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
-		babysitter_ret = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
-		babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
-		if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
-			//HAL_UART_Transmit(&huart1, (uint8_t *) " RECEIVE ERROR\r\n", strlen(" RECEIVE ERROR\r\n"), 100);
-		}
-		else {
-			uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
-			uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
-			bigbattery = 100000 * finalval / finalval2;
-
-			if ((bigbattery / 1000) < 10) {
-				//sprintf(integer, "0%d", bigbattery / 1000);
-				sprintf(HELPinteger, "0%d", HELPcounter);
-			}
-			else {
-				//sprintf(integer, "%02d", bigbattery / 1000);
-				sprintf(HELPinteger, "%02d", HELPcounter);
-			}
-
-//			RN4020_sendBatteryLife(&huart1, integer);
-			RN4020_sendBatteryLife(&huart1, HELPinteger);
-		}
-	}
-	else {
-		char integer[4] = {0,0,0,0}; //create an empty string to store number
-//		char decimal[4] = {0,0,0,0}; //create an empty string to store number
-		uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
-		uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
-		bigbattery = 100000 * finalval / finalval2;
-
-		if ((bigbattery / 1000) < 10) {
-			//sprintf(integer, "0%d", bigbattery / 1000);
-			sprintf(HELPinteger, "0%d", HELPcounter);
-		}
-		else {
-			//sprintf(integer, "%02d", bigbattery / 1000);
-			sprintf(HELPinteger, "%02d", HELPcounter);
-		}
-//		sprintf(decimal, "%03d", bigbattery % 1000);
-//		RN4020_sendBatteryLife(&huart1, integer);
-		RN4020_sendBatteryLife(&huart1, HELPinteger);
-
-	  }
+//	babysitter_ret = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
+//	babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
+//
+//	if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
+//		babysitter_ret = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, rem, I2C_MEMADD_SIZE_8BIT, BABY_data, 2, HAL_MAX_DELAY);
+//		babysitter_ret2 = HAL_I2C_Mem_Read(&hi2c2, BABY_Main_ADDR, full, I2C_MEMADD_SIZE_8BIT, BABY_data2, 2, HAL_MAX_DELAY);
+//		if ( babysitter_ret != HAL_OK || babysitter_ret2 != HAL_OK ) {
+//			//HAL_UART_Transmit(&huart1, (uint8_t *) " RECEIVE ERROR\r\n", strlen(" RECEIVE ERROR\r\n"), 100);
+//		}
+//		else {
+//			uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
+//			uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
+//			bigbattery = 100000 * finalval / finalval2;
+//
+//			if ((bigbattery / 1000) < 10) {
+//				//sprintf(integer, "0%d", bigbattery / 1000);
+//				sprintf(HELPinteger, "0%d", HELPcounter);
+//			}
+//			else {
+//				//sprintf(integer, "%02d", bigbattery / 1000);
+//				sprintf(HELPinteger, "%02d", HELPcounter);
+//			}
+//
+////			RN4020_sendBatteryLife(&huart1, integer);
+//			RN4020_sendBatteryLife(&huart1, HELPinteger);
+//		}
+//	}
+//	else {
+//		char integer[4] = {0,0,0,0}; //create an empty string to store number
+////		char decimal[4] = {0,0,0,0}; //create an empty string to store number
+//		uint16_t finalval = ((uint16_t) BABY_data[1] << 8) | BABY_data[0];
+//		uint16_t finalval2 = ((uint16_t) BABY_data2[1] << 8) | BABY_data2[0];
+//		bigbattery = 100000 * finalval / finalval2;
+//
+//		if ((bigbattery / 1000) < 10) {
+//			//sprintf(integer, "0%d", bigbattery / 1000);
+//			sprintf(HELPinteger, "0%d", HELPcounter);
+//		}
+//		else {
+//			//sprintf(integer, "%02d", bigbattery / 1000);
+//			sprintf(HELPinteger, "%02d", HELPcounter);
+//		}
+////		sprintf(decimal, "%03d", bigbattery % 1000);
+////		RN4020_sendBatteryLife(&huart1, integer);
+//		RN4020_sendBatteryLife(&huart1, HELPinteger);
+//
+//	  }
 //	  if (ret == HAL_OK) {
 //		  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
 //	  }
@@ -597,13 +641,15 @@ int main(void)
 //==================================================================================
 //	Bluetooth LE Configuration Step
 //==================================================================================
-//  HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
-//  RN4020_config_ret = RN4020_resetDefaultStep(&huart1);
-//  if (RN4020_config_ret == TRUE) {
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
-//  }
-//    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+  HAL_UART_Receive_IT(&huart1, rxBuffer, sizeof(rxBuffer));
+  RN4020_config_ret = RN4020_resetDefaultStep(&huart1);
+  if (RN4020_config_ret == TRUE) {
+	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+  }
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 //==================================================================================
+//  getBatteryLife();
+//  HAL_Delay(25);
 //==================================================================================
 //	ICM-20602 Configuration Step
 //==================================================================================
