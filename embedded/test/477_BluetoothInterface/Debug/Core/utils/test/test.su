@@ -1,0 +1,2 @@
+test.c:11:5:main	24	static
+test.c:24:14:all_tests	16	static

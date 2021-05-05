@@ -1,0 +1,2 @@
+time.c:9:6:sleep_ms	24	static
+time.c:16:6:sleep_us	24	static

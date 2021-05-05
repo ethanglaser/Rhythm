@@ -1,0 +1,7 @@
+utils.c:7:10:swapEndian	16	static
+utils.c:14:6:strTrim	16	static
+utils.c:19:6:strTrimLeft	24	static
+utils.c:30:6:strTrimRight	24	static
+utils.c:37:5:isWhitespace	16	static
+utils.c:48:7:urlDecode	32	static
+utils.c:70:6:printMemory	32	static
