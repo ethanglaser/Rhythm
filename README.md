@@ -8,6 +8,7 @@ The physical device tracks a user’s movement to determine their workout cadenc
 The code for Rhythm involves a combination of embedded software and an Android mobile application.
 ## Embedded software
 The embedded software comprises of code to control the functionality of a STM32L053 and its interactions with peripherals including Bluetooth Low Energy RN4020 via UART, a Battery Babysitter using I2C, and an ICM20602 IMU device using I2C.
+Embedded code can be found in path: Rhythm/embedded/test/477_BluetoothInterface/
 ## Application
 The application was developed using Android Studio, primarily consisting of a UI, Spotify API request interface, and Bluetooth scanning and receiving data. Three primary sources were utilized in the development of the application. For basic setup and reference, [Android Developers](https://developer.android.com/training/basics/firstapp), for Spotify API [reference](https://tolkiana.com/how-to-use-spotifys-sdk-in-kotlin/) and [code](https://github.com/tolkiana/spotify-player/blob/master/app/src/main/java/com/tolkiana/spotifyplayer/SpotifyService.kt) and for BLE [reference](https://punchthrough.com/android-ble-guide/) and [code](https://github.com/PunchThrough/ble-starter-android).
 
